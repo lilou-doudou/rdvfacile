@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;6e74d527c86b54b6e959956c4fed6dcf5f0e3ad17cce7d375af1020aae8ad503;/Users/sergepatrick/workspace/RdvFacile/frontend-web/src/app/features/customers/customers.component.ts"],
+  "sourcesContent": ["\n    .customers-page { max-width: 900px; }\n    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }\n    .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }\n    .search-field { width: 100%; margin-bottom: 20px; }\n    .loading-center { display: flex; justify-content: center; padding: 60px; }\n    .table-card { border-radius: 12px !important; overflow: hidden; }\n    .full-width { width: 100%; }\n    .dialog-form { display: flex; flex-direction: column; gap: 12px; min-width: 320px; padding-top: 8px; }\n    .empty-table { text-align: center; color: #999; padding: 24px; }\n    mat-spinner { display: inline-block; }\n  "],
+  "mappings": ";AACI,CAAC;AAAiB,aAAW;AAAO;AACpC,CAAC;AAAc,WAAS;AAAM,mBAAiB;AAAe,eAAa;AAAQ,iBAAe;AAAM;AACxG,CAAC;AAAa,UAAQ;AAAG,aAAW;AAAQ,eAAa;AAAK;AAC9D,CAAC;AAAe,SAAO;AAAM,iBAAe;AAAM;AAClD,CAAC;AAAiB,WAAS;AAAM,mBAAiB;AAAQ,WAAS;AAAM;AACzE,CAAC;AAAa,iBAAe;AAAiB,YAAU;AAAQ;AAChE,CAAC;AAAa,SAAO;AAAM;AAC3B,CAAC;AAAc,WAAS;AAAM,kBAAgB;AAAQ,OAAK;AAAM,aAAW;AAAO,eAAa;AAAK;AACrG,CAAC;AAAc,cAAY;AAAQ,SAAO;AAAM,WAAS;AAAM;AAC/D;AAAc,WAAS;AAAc;",
+  "names": []
+}

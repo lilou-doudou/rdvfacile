@@ -1,0 +1,46 @@
+# ===== macOS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+
+# ===== Spring Boot =====
+application-local.yml
+application-local.properties
+
+# ===== Node / Angular =====
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+# ===== Environment & secrets =====
+.env
+*.env.local
+*.env.*.local
+secrets.yml
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.iws
+*.ipr
+*.suo
+*.user
+.gradle/
+build/
+
+# ===== Divers =====
+__pycache__/
+*.pyc
+nohup.out
+*.log

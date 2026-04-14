@@ -1,0 +1,97 @@
+// Thème Angular Material personnalisé — RdvFacile
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$primary-palette: mat.define-palette((
+  50:  #e8f5e9,
+  100: #c8e6c9,
+  200: #a5d6a7,
+  300: #81c784,
+  400: #66bb6a,
+  500: #1e7e34,
+  600: #1b7030,
+  700: #155c27,
+  800: #0f491e,
+  900: #083513,
+  contrast: (
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  )
+), 500);
+
+$accent-palette: mat.define-palette(mat.$amber-palette, 600);
+$warn-palette: mat.define-palette(mat.$red-palette);
+
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary-palette,
+    accent: $accent-palette,
+    warn: $warn-palette,
+  ),
+  typography: mat.define-typography-config(
+    $font-family: 'Inter, sans-serif',
+  ),
+  density: 0,
+));
+
+@include mat.all-component-themes($theme);
+
+// Reset & base
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #f5f7fa;
+  color: #1a1a2e;
+}
+
+// Utilitaires
+.text-muted {
+  color: #6c757d;
+}
+
+.fw-bold {
+  font-weight: 600;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+// Badges de statut
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+
+  &.booked   { background: #e8f5e9; color: #1e7e34; }
+  &.cancelled { background: #fdecea; color: #c62828; }
+  &.done     { background: #eeeeee; color: #616161; }
+}
+
+// Snackbar globale
+.snack-success { background: #1e7e34 !important; color: white !important; }
+.snack-error   { background: #c62828 !important; color: white !important; }
+
+// Card générique
+.rdv-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+// Scrollbar discrète
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
