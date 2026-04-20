@@ -141,7 +141,7 @@ Tester la connexion à l'API : `https://rdvfacile.vercel.app/api/actuator/health
 
 | Service    | URL                                             |
 |------------|-------------------------------------------------|
-| Frontend   | `https://rdvfacile.vercel.app`                  |
+| Frontend   | `https://rdvfacile-ten.vercel.app`              |
 | Backend    | `https://rdvfacile-backend.onrender.com`        |
 | API Health | `https://rdvfacile-backend.onrender.com/api/actuator/health` |
 | Base       | Neon (accès uniquement depuis le backend)       |
