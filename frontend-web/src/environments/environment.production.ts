@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: 'https://rdvfacile-df5iu.ondigitalocean.app/api',
 };
