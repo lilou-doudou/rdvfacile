@@ -1,24 +1,21 @@
-# Profil DEV — base H2 en mémoire (aucune installation requise)
+# Profil DEV — base PostgreSQL locale
 spring:
   datasource:
-    url: jdbc:h2:mem:rdvfacile;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DEFAULT_NULL_ORDERING=HIGH
-    username: sa
-    password: ''
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/rdvfacile_bd
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop   # Hibernate crée le schéma depuis les entités JPA
-    database-platform: org.hibernate.dialect.H2Dialect
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-  h2:
-    console:
-      enabled: true
-      path: /h2-console        # accessible sur http://localhost:8080/api/h2-console
   flyway:
-    enabled: false           # désactivé en dev, Hibernate gère le schéma
+    enabled: true
+    locations: classpath:db/migration
 
 logging:
   level:

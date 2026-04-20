@@ -88,13 +88,6 @@
             <artifactId>flyway-core</artifactId>
         </dependency>
 
-        <!-- H2 (profil dev - base de données en mémoire, sans installation) -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
         <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
