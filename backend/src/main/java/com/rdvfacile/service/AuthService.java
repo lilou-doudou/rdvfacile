@@ -1,5 +1,11 @@
 package com.rdvfacile.service;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.rdvfacile.dto.auth.AuthResponse;
 import com.rdvfacile.dto.auth.LoginRequest;
 import com.rdvfacile.dto.auth.RegisterRequest;
@@ -10,12 +16,8 @@ import com.rdvfacile.model.enums.UserRole;
 import com.rdvfacile.repository.BusinessRepository;
 import com.rdvfacile.repository.UserRepository;
 import com.rdvfacile.security.JwtUtils;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,12 +57,13 @@ public class AuthService {
                 business.getId(), business.getName(), user.getRole().name());
     }
 
+    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmailWithBusiness(request.getEmail())
                 .orElseThrow(() -> new BusinessException("Identifiants invalides"));
 
         String token = jwtUtils.generateToken(user);
