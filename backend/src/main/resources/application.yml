@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/rdvfacile_bd
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/rdvfacile_bd}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
@@ -16,9 +16,18 @@ spring:
     locations: classpath:db/migration
 
 server:
-  port: 8080
+  port: ${PORT:8080}
   servlet:
     context-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 app:
   jwt:

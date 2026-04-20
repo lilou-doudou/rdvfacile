@@ -82,6 +82,12 @@
             <version>10.1.0</version>
         </dependency>
 
+        <!-- Actuator (health check pour Render) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Flyway pour migrations DB -->
         <dependency>
             <groupId>org.flywaydb</groupId>
