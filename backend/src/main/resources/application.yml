@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/rdvfacile
-    username: ${DB_USERNAME:rdvfacile}
-    password: ${DB_PASSWORD:rdvfacile123}
+    url: jdbc:postgresql://localhost:5432/rdvfacile_bd
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
