@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://rdvfacile-backend.onrender.com/api/$1"
+      "destination": "https://rdvfacile-df5iu.ondigitalocean.app/api/$1"
     },
     {
       "source": "/(.*)",
