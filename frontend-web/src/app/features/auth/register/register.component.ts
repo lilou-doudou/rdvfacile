@@ -201,5 +201,4 @@ export class RegisterComponent {
       error: () => this.snack.open('Erreur lors du renvoi', 'Fermer', { duration: 4000 }),
     });
   }
-  }
 }
