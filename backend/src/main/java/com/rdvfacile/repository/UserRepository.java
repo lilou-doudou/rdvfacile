@@ -15,5 +15,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u FROM User u JOIN FETCH u.business WHERE u.email = :email")
     Optional<User> findByEmailWithBusiness(@Param("email") String email);
     Optional<User> findByEmail(String email);
+    Optional<User> findByResetToken(String resetToken);
     boolean existsByEmail(String email);
 }

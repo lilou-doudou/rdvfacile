@@ -1,5 +1,7 @@
 package com.rdvfacile.service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +30,13 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+    private final JavaMailSender mailSender;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -69,5 +78,43 @@ public class AuthService {
         String token = jwtUtils.generateToken(user);
         return new AuthResponse(token, user.getEmail(), user.getFullName(),
                 user.getBusiness().getId(), user.getBusiness().getName(), user.getRole().name());
+    }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+            String token = UUID.randomUUID().toString();
+            user.setResetToken(token);
+            user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
+            userRepository.save(user);
+
+            String resetLink = frontendUrl + "/reset-password?token=" + token;
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(user.getEmail());
+            message.setSubject("Réinitialisation de votre mot de passe RdvFacile");
+            message.setText("Bonjour " + user.getFullName() + ",\n\n"
+                    + "Vous avez demandé la réinitialisation de votre mot de passe.\n\n"
+                    + "Cliquez sur le lien ci-dessous (valable 1 heure) :\n"
+                    + resetLink + "\n\n"
+                    + "Si vous n'avez pas fait cette demande, ignorez cet email.\n\n"
+                    + "L'équipe RdvFacile");
+            mailSender.send(message);
+        });
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByResetToken(request.getToken())
+                .orElseThrow(() -> new BusinessException("Lien de réinitialisation invalide ou expiré"));
+
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new BusinessException("Lien de réinitialisation expiré");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
     }
 }
