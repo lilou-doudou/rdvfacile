@@ -26,9 +26,7 @@ export class AuthService {
   }
 
   register(payload: RegisterPayload) {
-    return this.http
-      .post<AuthResponse>(`${environment.apiUrl}/auth/register`, payload)
-      .pipe(tap(r => this.persist(r)));
+    return this.http.post<void>(`${environment.apiUrl}/auth/register`, payload);
   }
 
   forgotPassword(email: string) {
@@ -37,6 +35,14 @@ export class AuthService {
 
   resetPassword(token: string, newPassword: string) {
     return this.http.post<void>(`${environment.apiUrl}/auth/reset-password`, { token, newPassword });
+  }
+
+  verifyEmail(token: string) {
+    return this.http.get<void>(`${environment.apiUrl}/auth/verify-email`, { params: { token } });
+  }
+
+  resendVerification(email: string) {
+    return this.http.post<void>(`${environment.apiUrl}/auth/resend-verification`, null, { params: { email } });
   }
 
   logout() {

@@ -57,6 +57,12 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean active = true;
 
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
+
+    @Column(name = "verification_token")
+    private String verificationToken;
+
     @Column(name = "reset_token")
     private String resetToken;
 
