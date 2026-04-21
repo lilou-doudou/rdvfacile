@@ -32,6 +32,17 @@ import { AuthService } from '../../../core/services/auth.service';
         </mat-card-header>
 
         <mat-card-content>
+          @if (registered()) {
+            <div class="success-box">
+              <mat-icon color="primary">mark_email_read</mat-icon>
+              <h2>Vérifiez votre email !</h2>
+              <p>Un email de confirmation a été envoyé à <strong>{{ registeredEmail() }}</strong>.<br>
+              Cliquez sur le lien dans l'email pour activer votre compte.</p>
+              <p class="hint">Vous ne recevez pas l'email ?
+                <button mat-button color="primary" (click)="resend()">Renvoyer</button>
+              </p>
+            </div>
+          } @else {
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
             <!-- Commerce -->
@@ -96,6 +107,7 @@ import { AuthService } from '../../../core/services/auth.service';
               @else { Créer mon espace }
             </button>
           </form>
+          }
         </mat-card-content>
 
         <mat-card-actions>
@@ -130,6 +142,11 @@ import { AuthService } from '../../../core/services/auth.service';
     .submit-btn { height: 48px; font-size: 1rem; margin-top: 8px; }
     .login-link { text-align: center; font-size: .875rem; color: #666; }
     .login-link a { color: #1e7e34; font-weight: 600; text-decoration: none; }
+    .success-box { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 0; text-align: center; }
+    .success-box mat-icon { font-size: 56px; width: 56px; height: 56px; }
+    .success-box h2 { margin: 0; color: #1e7e34; }
+    .success-box p { margin: 0; color: #444; line-height: 1.6; }
+    .hint { font-size: 13px; color: #888; }
   `],
 })
 export class RegisterComponent {
@@ -138,8 +155,10 @@ export class RegisterComponent {
   private readonly fb     = inject(FormBuilder);
   private readonly snack  = inject(MatSnackBar);
 
-  readonly showPassword = signal(false);
-  readonly loading      = signal(false);
+  readonly showPassword  = signal(false);
+  readonly loading       = signal(false);
+  readonly registered    = signal(false);
+  readonly registeredEmail = signal('');
 
   form = this.fb.group({
     businessName:  ['', Validators.required],
@@ -162,11 +181,25 @@ export class RegisterComponent {
       email:         v.email!,
       password:      v.password!,
     }).subscribe({
-      next:  () => this.router.navigate(['/dashboard']),
+      next: () => {
+        this.registeredEmail.set(v.email!);
+        this.registered.set(true);
+        this.loading.set(false);
+      },
       error: (err) => {
         this.snack.open(err.error?.message ?? 'Erreur lors de l\'inscription', 'Fermer', { duration: 4000 });
         this.loading.set(false);
       },
     });
+  }
+
+  resend() {
+    const email = this.registeredEmail();
+    if (!email) return;
+    this.auth.resendVerification(email).subscribe({
+      next: () => this.snack.open('Email de confirmation renvoyé !', 'OK', { duration: 4000 }),
+      error: () => this.snack.open('Erreur lors du renvoi', 'Fermer', { duration: 4000 }),
+    });
+  }
   }
 }
