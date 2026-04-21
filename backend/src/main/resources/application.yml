@@ -36,6 +36,20 @@ app:
   jwt:
     secret: ${JWT_SECRET:rdvfacile-super-secret-key-minimum-256-bits-long-for-hs256-algorithm}
     expiration-ms: 86400000  # 24h
+  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
