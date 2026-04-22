@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/core/services/customer.service.ts"],
-  "sourcesContent": ["import { Injectable, inject } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\nimport { environment } from '../../../environments/environment';\nimport { Customer, CustomerPayload } from '../models/customer.model';\n\n@Injectable({ providedIn: 'root' })\nexport class CustomerService {\n  private readonly http = inject(HttpClient);\n  private readonly base = `${environment.apiUrl}/customers`;\n\n  getAll() {\n    return this.http.get<Customer[]>(this.base);\n  }\n\n  create(payload: CustomerPayload) {\n    return this.http.post<Customer>(this.base, payload);\n  }\n\n  update(id: string, payload: CustomerPayload) {\n    return this.http.put<Customer>(`${this.base}/${id}`, payload);\n  }\n}\n"],
-  "mappings": ";;;;;;;;AAMM,IAAO,kBAAP,MAAO,iBAAe;EAD5B,cAAA;AAEmB,SAAA,OAAO,OAAO,UAAU;AACxB,SAAA,OAAO,GAAG,YAAY,MAAM;;EAE7C,SAAM;AACJ,WAAO,KAAK,KAAK,IAAgB,KAAK,IAAI;EAC5C;EAEA,OAAO,SAAwB;AAC7B,WAAO,KAAK,KAAK,KAAe,KAAK,MAAM,OAAO;EACpD;EAEA,OAAO,IAAY,SAAwB;AACzC,WAAO,KAAK,KAAK,IAAc,GAAG,KAAK,IAAI,IAAI,EAAE,IAAI,OAAO;EAC9D;;;uBAdW,kBAAe;IAAA;EAAA;;4EAAf,kBAAe,SAAf,iBAAe,WAAA,YADF,OAAM,CAAA;EAAA;;",
-  "names": []
-}
