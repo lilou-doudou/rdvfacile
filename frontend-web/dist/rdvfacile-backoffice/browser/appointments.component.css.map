@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["angular:styles/component:css;363e0defcdc125f1d3b810636a147a9df4c9eda5b0d4f5bd66d5188c667fe041;/Users/sergepatrick/workspace/RdvFacile/frontend-web/src/app/features/appointments/appointments.component.ts"],
-  "sourcesContent": ["\n    .appointments-page { height: 100%; }\n    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }\n    .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }\n    .loading-center { display: flex; justify-content: center; padding: 60px; }\n    .calendar-card { padding: 16px; border-radius: 12px !important; }\n    .dialog-form { display: flex; flex-direction: column; gap: 8px; min-width: 340px; padding-top: 8px; }\n    .full-width { width: 100%; }\n    .detail-content p { margin: 8px 0; }\n    mat-spinner { display: inline-block; }\n  "],
-  "mappings": ";AACI,CAAC;AAAoB,UAAQ;AAAM;AACnC,CAAC;AAAc,WAAS;AAAM,mBAAiB;AAAe,eAAa;AAAQ,iBAAe;AAAM;AACxG,CAAC;AAAa,UAAQ;AAAG,aAAW;AAAQ,eAAa;AAAK;AAC9D,CAAC;AAAiB,WAAS;AAAM,mBAAiB;AAAQ,WAAS;AAAM;AACzE,CAAC;AAAgB,WAAS;AAAM,iBAAe;AAAiB;AAChE,CAAC;AAAc,WAAS;AAAM,kBAAgB;AAAQ,OAAK;AAAK,aAAW;AAAO,eAAa;AAAK;AACpG,CAAC;AAAa,SAAO;AAAM;AAC3B,CAAC,eAAe;AAAI,UAAQ,IAAI;AAAG;AACnC;AAAc,WAAS;AAAc;",
-  "names": []
-}

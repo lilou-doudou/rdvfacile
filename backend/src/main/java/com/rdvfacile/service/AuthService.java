@@ -3,7 +3,10 @@ package com.rdvfacile.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +33,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final BusinessRepository businessRepository;
@@ -86,7 +91,11 @@ public class AuthService {
                 + verifyLink + "\n\n"
                 + "Ce lien est valable 24 heures.\n\n"
                 + "L'équipe RdvFacile");
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+        } catch (MailException e) {
+            log.error("Échec envoi email de vérification à {}: {}", email, e.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)
@@ -126,7 +135,11 @@ public class AuthService {
                     + resetLink + "\n\n"
                     + "Si vous n'avez pas fait cette demande, ignorez cet email.\n\n"
                     + "L'équipe RdvFacile");
-            mailSender.send(message);
+            try {
+                mailSender.send(message);
+            } catch (MailException e) {
+                log.error("Échec envoi email réinitialisation à {}: {}", user.getEmail(), e.getMessage());
+            }
         });
     }
 
