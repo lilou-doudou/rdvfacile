@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
@@ -77,7 +78,7 @@ import { Customer } from '../../core/models/customer.model';
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Date et heure de début</mat-label>
-            <input matInput type="datetime-local" formControlName="startTime" />
+            <input matInput type="datetime-local" formControlName="startTime" [min]="minStartTime()" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
@@ -227,7 +228,7 @@ export class AppointmentsComponent implements OnInit {
         this.snack.open('Rendez-vous créé', '', { duration: 3000 });
       },
       error: (err) => {
-        this.snack.open(err.error?.message ?? 'Erreur lors de la création', 'Fermer', { duration: 4000 });
+        this.snack.open(this.extractApiError(err), 'Fermer', { duration: 5000 });
         this.saving.set(false);
       },
     });
@@ -255,8 +256,24 @@ export class AppointmentsComponent implements OnInit {
   }
 
   private onDateSelect(arg: DateSelectArg) {
-    const local = this.toLocalDatetimeInput(arg.start);
+    const selected = new Date(arg.start);
+
+    // In month view, FullCalendar often returns all-day selections at 00:00.
+    if (arg.allDay) {
+      selected.setHours(9, 0, 0, 0);
+    }
+
+    const nowPlus30Min = new Date(Date.now() + 30 * 60 * 1000);
+    if (selected < nowPlus30Min) {
+      selected.setTime(nowPlus30Min.getTime());
+    }
+
+    const local = this.toLocalDatetimeInput(selected);
     this.openNewDialog(local);
+  }
+
+  minStartTime(): string {
+    return this.toLocalDatetimeInput(new Date(Date.now() + 60 * 1000));
   }
 
   private refreshCalendarEvents(appts: Appointment[]) {
@@ -275,5 +292,30 @@ export class AppointmentsComponent implements OnInit {
   private toLocalDatetimeInput(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  private extractApiError(err: unknown): string {
+    if (!(err instanceof HttpErrorResponse)) {
+      return 'Erreur lors de la creation';
+    }
+
+    const body = err.error as { error?: string; message?: string; details?: Record<string, string> } | null;
+    if (!body) {
+      return 'Erreur lors de la creation';
+    }
+
+    if (body.error) {
+      return body.error;
+    }
+
+    if (body.message) {
+      return body.message;
+    }
+
+    if (body.details && Object.keys(body.details).length > 0) {
+      return Object.values(body.details)[0];
+    }
+
+    return 'Erreur lors de la creation';
   }
 }

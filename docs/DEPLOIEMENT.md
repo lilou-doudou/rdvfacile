@@ -2,18 +2,71 @@
 
 ## Architecture de production
 
+> Etat du depot au 28 avril 2026 :
+> - le frontend de production est deploie sur Vercel
+> - le frontend pointe actuellement vers un backend DigitalOcean App Platform
+> - le depot contient aussi une configuration `render.yaml`, qui correspond a un ancien/deuxieme mode de deploiement du backend
+> - la base de donnees de reference documentee reste Neon PostgreSQL
+
 ```
 [Utilisateur]
     │
     ▼
 [Vercel] — frontend Angular
-    │  proxy /api/* → Render
+    │  appels API → backend de production
     ▼
-[Render] — backend Spring Boot
+[DigitalOcean App Platform ou Render] — backend Spring Boot
     │  JDBC PostgreSQL
     ▼
 [Neon] — base de données PostgreSQL
 ```
+
+## Etat actuel detecte dans le code
+
+### Frontend
+
+- `frontend-web/vercel.json` redirige `/api/*` vers `https://rdvfacile-df5iu.ondigitalocean.app/api/$1`
+- `frontend-web/src/environments/environment.production.ts` utilise aussi `https://rdvfacile-df5iu.ondigitalocean.app/api`
+- conclusion : la production actuellement versionnee dans le depot cible **DigitalOcean** pour le backend
+
+### Backend
+
+- `render.yaml` existe toujours et permet de deployer le backend sur **Render**
+- `backend/Dockerfile` permet aussi un deploiement conteneurise compatible avec **DigitalOcean App Platform**
+- conclusion : le backend peut etre redeploye sur **Render** ou **DigitalOcean**, mais la configuration frontend actuelle suppose **DigitalOcean**
+
+---
+
+## Checklist nouvel ordinateur
+
+Si tu changes de machine, voici ce qu'il faut recuperer en priorite :
+
+1. Acces GitHub au depot `rdvfacile`
+2. Acces Vercel au projet frontend
+3. Acces au backend de production :
+   - soit DigitalOcean App Platform
+   - soit Render si tu veux reutiliser `render.yaml`
+4. Acces Neon pour la base PostgreSQL
+5. Acces Twilio si l'envoi WhatsApp est actif
+6. Les secrets suivants :
+   - `DB_URL`
+   - `DB_USERNAME`
+   - `DB_PASSWORD`
+   - `JWT_SECRET`
+   - `TWILIO_ACCOUNT_SID`
+   - `TWILIO_AUTH_TOKEN`
+   - `TWILIO_WHATSAPP_FROM`
+
+### Outils a reinstaller localement
+
+- `git`
+- `java 21`
+- `maven`
+- `node.js 20+`
+- `npm`
+- `vercel` CLI optionnel
+- `doctl` optionnel si tu geres DigitalOcean en CLI
+- `render` CLI optionnel si tu geres Render autrement que via le dashboard
 
 ---
 
