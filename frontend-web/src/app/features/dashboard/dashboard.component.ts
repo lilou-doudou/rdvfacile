@@ -1,24 +1,26 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatRippleModule } from '@angular/material/core';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { ServiceApiService } from '../../core/services/service-api.service';
 import { CustomerService } from '../../core/services/customer.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Appointment, AppointmentStatus, STATUS_LABEL } from '../../core/models/appointment.model';
 
-interface StatCard { label: string; value: number | string; icon: string; color: string; }
+interface StatCard { label: string; value: number | string; icon: string; color: string; route: string; }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     DatePipe, MatCardModule, MatIconModule,
-    MatDividerModule, MatProgressSpinnerModule, MatChipsModule,
+    MatDividerModule, MatProgressSpinnerModule, MatChipsModule, MatRippleModule,
   ],
   template: `
     <div class="dashboard">
@@ -33,7 +35,7 @@ interface StatCard { label: string; value: number | string; icon: string; color:
       } @else {
         <div class="stats-grid">
           @for (card of statCards(); track card.label) {
-            <mat-card class="stat-card">
+            <mat-card class="stat-card" matRipple (click)="navigate(card.route)">
               <div class="stat-icon" [style.background]="card.color">
                 <mat-icon>{{ card.icon }}</mat-icon>
               </div>
@@ -98,6 +100,12 @@ interface StatCard { label: string; value: number | string; icon: string; color:
       gap: 16px;
       padding: 20px;
       border-radius: 12px !important;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .stat-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+      transform: translateY(-2px);
     }
 
     .stat-icon {
@@ -124,6 +132,7 @@ interface StatCard { label: string; value: number | string; icon: string; color:
   `],
 })
 export class DashboardComponent implements OnInit {
+  private readonly router     = inject(Router);
   readonly auth               = inject(AuthService);
   private readonly apptSvc    = inject(AppointmentService);
   private readonly serviceSvc = inject(ServiceApiService);
@@ -150,26 +159,32 @@ export class DashboardComponent implements OnInit {
       value: this.todayAppointments().length,
       icon:  'event',
       color: '#1e7e34',
+      route: '/appointments',
     },
     {
       label: 'Total clients',
       value: this.totalCusts(),
       icon:  'people',
       color: '#1976d2',
+      route: '/customers',
     },
     {
       label: 'Services actifs',
       value: this.totalSvcs(),
       icon:  'content_cut',
       color: '#f57c00',
+      route: '/services',
     },
     {
       label: 'RDV ce mois',
       value: this.monthCount(),
       icon:  'calendar_month',
       color: '#7b1fa2',
+      route: '/appointments',
     },
   ]);
+
+  navigate(route: string) { this.router.navigate([route]); }
 
   private monthCount() {
     const now = this.today;
