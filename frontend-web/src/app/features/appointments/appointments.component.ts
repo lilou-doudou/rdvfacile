@@ -205,10 +205,17 @@ export class AppointmentsComponent implements OnInit {
     const start = fmt(new Date(now.getFullYear(), now.getMonth(), 1));
     const end   = fmt(new Date(now.getFullYear(), now.getMonth() + 2, 0));
 
-    this.apptSvc.getByDateRange(start, end).subscribe(appts => {
-      this.appointments.set(appts);
-      this.refreshCalendarEvents(appts);
-      this.loading.set(false);
+    this.apptSvc.getByDateRange(start, end).subscribe({
+      next: appts => {
+        this.appointments.set(appts);
+        this.refreshCalendarEvents(appts);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.snack.open('Erreur lors du chargement des rendez-vous', 'Réessayer', { duration: 5000 })
+          .onAction().subscribe(() => this.reloadAppointments());
+      },
     });
   }
 
