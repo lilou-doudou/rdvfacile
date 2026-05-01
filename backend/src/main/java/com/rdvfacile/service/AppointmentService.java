@@ -36,11 +36,13 @@ public class AppointmentService {
     private final CustomerRepository customerRepository;
     private final ServiceRepository serviceRepository;
 
+    @Transactional(readOnly = true)
     public List<AppointmentResponse> getAll(UUID businessId) {
         return appointmentRepository.findByBusinessIdOrderByStartTimeAsc(businessId)
                 .stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<AppointmentResponse> getByDateRange(UUID businessId, LocalDate start, LocalDate end) {
         return appointmentRepository.findByBusinessIdAndDateRange(
                         businessId,
@@ -49,6 +51,7 @@ public class AppointmentService {
                 ).stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public AppointmentResponse getById(UUID id, UUID businessId) {
         return appointmentRepository.findByIdAndBusinessId(id, businessId)
                 .map(this::toResponse)

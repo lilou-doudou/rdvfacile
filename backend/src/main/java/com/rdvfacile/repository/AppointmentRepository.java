@@ -15,12 +15,21 @@ import java.util.UUID;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, UUID> {
 
-    List<Appointment> findByBusinessIdOrderByStartTimeAsc(UUID businessId);
+    @Query("""
+        SELECT a FROM Appointment a
+        JOIN FETCH a.customer
+        JOIN FETCH a.service
+        WHERE a.business.id = :businessId
+        ORDER BY a.startTime ASC
+    """)
+    List<Appointment> findByBusinessIdOrderByStartTimeAsc(@Param("businessId") UUID businessId);
 
     Optional<Appointment> findByIdAndBusinessId(UUID id, UUID businessId);
 
     @Query("""
         SELECT a FROM Appointment a
+        JOIN FETCH a.customer
+        JOIN FETCH a.service
         WHERE a.business.id = :businessId
         AND a.startTime >= :start
         AND a.startTime < :end
