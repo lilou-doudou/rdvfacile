@@ -64,4 +64,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     );
 
     List<Appointment> findByCustomerIdAndBusinessId(UUID customerId, UUID businessId);
+
+    @Query("""
+        SELECT a FROM Appointment a
+        WHERE a.customer.id = :customerId
+        AND a.business.id = :businessId
+        AND a.status = 'BOOKED'
+        AND a.startTime > :now
+        ORDER BY a.startTime ASC
+    """)
+    List<Appointment> findNextBookedForCustomer(
+        @Param("customerId") UUID customerId,
+        @Param("businessId") UUID businessId,
+        @Param("now") LocalDateTime now);
 }

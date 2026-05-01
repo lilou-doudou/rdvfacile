@@ -17,10 +17,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rdvfacile.dto.appointment.AppointmentRequest;
+import com.rdvfacile.model.Appointment;
 import com.rdvfacile.model.Business;
 import com.rdvfacile.model.Customer;
 import com.rdvfacile.model.ServiceEntity;
+import com.rdvfacile.model.enums.AppointmentStatus;
+import com.rdvfacile.repository.AppointmentRepository;
 import com.rdvfacile.repository.BusinessRepository;
+import com.rdvfacile.repository.CustomerRepository;
 import com.rdvfacile.repository.ServiceRepository;
 import com.rdvfacile.service.AppointmentService;
 import com.rdvfacile.service.CustomerService;
@@ -49,6 +53,8 @@ public class WhatsAppWebhookController {
     private final WhatsAppService whatsAppService;
     private final BusinessRepository businessRepository;
     private final ServiceRepository serviceRepository;
+    private final CustomerRepository customerRepository;
+    private final AppointmentRepository appointmentRepository;
 
     private static final DateTimeFormatter SLOT_FORMAT = DateTimeFormatter.ofPattern("EEE dd/MM à HH:mm");
 
@@ -80,9 +86,16 @@ public class WhatsAppWebhookController {
         ConversationState state = sessions.getOrDefault(phone, new ConversationState(ConversationStep.INIT, business.getId()));
 
         // Mot-clé de réinitialisation
-        if (message.equalsIgnoreCase("STOP") || message.equalsIgnoreCase("ANNULER") || message.equalsIgnoreCase("MENU")) {
+        if (message.equalsIgnoreCase("STOP") || message.equalsIgnoreCase("MENU")) {
             sessions.remove(phone);
             whatsAppService.sendMessage(phone, "Conversation réinitialisée. Envoyez n'importe quel message pour reprendre.");
+            return twimlOk();
+        }
+
+        // Annulation d'un rendez-vous existant
+        if (message.equalsIgnoreCase("ANNULER")) {
+            sessions.remove(phone);
+            handleCancellation(phone, business.getId());
             return twimlOk();
         }
 
@@ -212,6 +225,35 @@ public class WhatsAppWebhookController {
                 "⚠️ Ce créneau n'est plus disponible. Envoyez un message pour voir de nouveaux créneaux.");
             sessions.remove(phone);
         }
+    }
+
+    // ---- Annulation ----
+
+    private void handleCancellation(String phone, UUID businessId) {
+        Optional<Customer> customerOpt = customerRepository.findByPhoneAndBusinessId(phone, businessId);
+        if (customerOpt.isEmpty()) {
+            whatsAppService.sendMessage(phone,
+                "Aucun compte trouvé pour votre numéro. Envoyez un message pour prendre un rendez-vous.");
+            return;
+        }
+
+        List<Appointment> upcoming = appointmentRepository.findNextBookedForCustomer(
+            customerOpt.get().getId(), businessId, LocalDateTime.now());
+
+        if (upcoming.isEmpty()) {
+            whatsAppService.sendMessage(phone,
+                "Vous n'avez aucun rendez-vous à venir à annuler.\n\nEnvoyez un message pour prendre un RDV.");
+            return;
+        }
+
+        Appointment appointment = upcoming.get(0);
+        appointmentService.updateStatus(appointment.getId(), AppointmentStatus.CANCELLED, businessId);
+        log.info("RDV {} annulé via WhatsApp par {}", appointment.getId(), phone);
+
+        whatsAppService.sendMessage(phone,
+            "❌ *Rendez-vous annulé*\n\n" +
+            "Votre rendez-vous du *" + appointment.getStartTime().format(SLOT_FORMAT) + "* a bien été annulé.\n\n" +
+            "Pour prendre un nouveau rendez-vous, envoyez-nous un message 😊");
     }
 
     // ---- Utilitaires ----

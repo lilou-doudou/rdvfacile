@@ -38,9 +38,14 @@ import { Customer } from '../../core/models/customer.model';
     <div class="appointments-page">
       <div class="page-header">
         <h2 class="page-title">Rendez-vous</h2>
-        <button mat-raised-button color="primary" (click)="openNewDialog()">
-          <mat-icon>add</mat-icon> Nouveau RDV
-        </button>
+        <div style="display:flex;gap:8px">
+          <button mat-stroked-button (click)="reloadAppointments()">
+            <mat-icon>refresh</mat-icon> Actualiser
+          </button>
+          <button mat-raised-button color="primary" (click)="openNewDialog()">
+            <mat-icon>add</mat-icon> Nouveau RDV
+          </button>
+        </div>
       </div>
 
       @if (loading()) {
@@ -187,6 +192,13 @@ export class AppointmentsComponent implements OnInit {
   };
 
   ngOnInit() {
+    this.reloadAppointments();
+    this.serviceSvc.getAll().subscribe(s => this.services.set(s));
+    this.custSvc.getAll().subscribe(c => this.customers.set(c));
+  }
+
+  reloadAppointments() {
+    this.loading.set(true);
     const now = new Date();
     const fmt = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -198,9 +210,6 @@ export class AppointmentsComponent implements OnInit {
       this.refreshCalendarEvents(appts);
       this.loading.set(false);
     });
-
-    this.serviceSvc.getAll().subscribe(s => this.services.set(s));
-    this.custSvc.getAll().subscribe(c => this.customers.set(c));
   }
 
   openNewDialog(prefilledStart?: string) {
