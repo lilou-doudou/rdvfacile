@@ -1,11 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 
 interface NavItem { label: string; icon: string; route: string; }
@@ -22,7 +25,10 @@ interface NavItem { label: string; icon: string; route: string; }
     <mat-sidenav-container class="sidenav-container">
 
       <!-- Sidebar -->
-      <mat-sidenav mode="side" opened class="sidenav">
+      <mat-sidenav #sidenav
+                   [mode]="isMobile() ? 'over' : 'side'"
+                   [opened]="!isMobile()"
+                   class="sidenav">
         <div class="brand">
           <mat-icon>event_available</mat-icon>
           <span>RdvFacile</span>
@@ -32,7 +38,8 @@ interface NavItem { label: string; icon: string; route: string; }
           @for (item of navItems; track item.route) {
             <a mat-list-item
                [routerLink]="item.route"
-               routerLinkActive="active-link">
+               routerLinkActive="active-link"
+               (click)="isMobile() && sidenav.close()">
               <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
               <span matListItemTitle>{{ item.label }}</span>
             </a>
@@ -54,9 +61,16 @@ interface NavItem { label: string; icon: string; route: string; }
       <!-- Main content -->
       <mat-sidenav-content class="main-content">
         <mat-toolbar color="primary" class="top-toolbar">
-          <span class="toolbar-title">Tableau de bord</span>
+          @if (isMobile()) {
+            <button mat-icon-button class="menu-btn" (click)="sidenav.toggle()">
+              <mat-icon>menu</mat-icon>
+            </button>
+          }
+          <span class="toolbar-title">RdvFacile</span>
           <span class="spacer"></span>
-          <span class="user-email">{{ auth.user()?.email }}</span>
+          @if (!isMobile()) {
+            <span class="user-email">{{ auth.user()?.email }}</span>
+          }
         </mat-toolbar>
 
         <div class="page-container">
@@ -130,15 +144,29 @@ interface NavItem { label: string; icon: string; route: string; }
       box-shadow: 0 2px 6px rgba(0,0,0,.2);
     }
 
+    .menu-btn { margin-right: 4px; color: white; }
     .toolbar-title { font-size: 1rem; font-weight: 600; }
     .spacer { flex: 1; }
     .user-email { font-size: .85rem; opacity: .85; }
 
-    .page-container { padding: 24px; flex: 1; overflow-y: auto; }
+    .page-container { padding: 16px; flex: 1; overflow-y: auto; }
+
+    @media (min-width: 768px) {
+      .page-container { padding: 24px; }
+    }
   `],
 })
 export class ShellComponent {
   readonly auth = inject(AuthService);
+
+  private readonly bpo = inject(BreakpointObserver);
+
+  readonly isMobile = toSignal(
+    this.bpo.observe([Breakpoints.Handset, Breakpoints.TabletPortrait]).pipe(
+      map(r => r.matches)
+    ),
+    { initialValue: false }
+  );
 
   readonly navItems: NavItem[] = [
     { label: 'Tableau de bord', icon: 'dashboard',        route: '/dashboard'    },

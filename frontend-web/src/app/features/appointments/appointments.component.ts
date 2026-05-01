@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatCardModule } from '@angular/material/card';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, EventClickArg, DateSelectArg } from '@fullcalendar/core';
@@ -32,7 +33,7 @@ import { Customer } from '../../core/models/customer.model';
     FullCalendarModule,
     MatButtonModule, MatIconModule, MatDialogModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatSnackBarModule, MatProgressSpinnerModule, MatCardModule,
+    MatSnackBarModule, MatProgressSpinnerModule, MatProgressBarModule, MatCardModule,
   ],
   template: `
     <div class="appointments-page">
@@ -49,12 +50,11 @@ import { Customer } from '../../core/models/customer.model';
       </div>
 
       @if (loading()) {
-        <div class="loading-center"><mat-spinner diameter="40" /></div>
-      } @else {
-        <mat-card class="calendar-card">
-          <full-calendar [options]="calendarOptions" />
-        </mat-card>
+        <mat-progress-bar mode="indeterminate" class="loading-bar" />
       }
+      <mat-card class="calendar-card">
+        <full-calendar [options]="calendarOptions" />
+      </mat-card>
     </div>
 
     <!-- New Appointment Dialog -->
@@ -134,11 +134,11 @@ import { Customer } from '../../core/models/customer.model';
   `,
   styles: [`
     .appointments-page { height: 100%; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
     .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
-    .loading-center { display: flex; justify-content: center; padding: 60px; }
-    .calendar-card { padding: 16px; border-radius: 12px !important; }
-    .dialog-form { display: flex; flex-direction: column; gap: 8px; min-width: 340px; padding-top: 8px; }
+    .loading-bar { margin-bottom: 8px; border-radius: 4px; }
+    .calendar-card { padding: 8px; border-radius: 12px !important; overflow-x: auto; }
+    .dialog-form { display: flex; flex-direction: column; gap: 8px; min-width: min(340px, 90vw); padding-top: 8px; }
     .full-width { width: 100%; }
     .detail-content p { margin: 8px 0; }
     mat-spinner { display: inline-block; }
@@ -181,7 +181,7 @@ export class AppointmentsComponent implements OnInit {
     },
     slotMinTime:   '07:00:00',
     slotMaxTime:   '21:00:00',
-    height:        620,
+    height:        'auto',
     selectable:    true,
     selectMirror:  true,
     editable:      false,
