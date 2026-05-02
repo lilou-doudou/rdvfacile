@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,10 +19,10 @@ import { Service, ServicePayload } from '../../core/models/service.model';
   selector: 'app-services',
   standalone: true,
   imports: [
-    CurrencyPipe, ReactiveFormsModule,
+    DecimalPipe, ReactiveFormsModule,
     MatTableModule, MatButtonModule, MatIconModule, MatDialogModule,
     MatFormFieldModule, MatInputModule, MatSnackBarModule,
-    MatProgressSpinnerModule, MatCardModule, MatChipsModule, MatSlideToggleModule,
+    MatProgressSpinnerModule, MatCardModule, MatSlideToggleModule,
   ],
   template: `
     <div class="services-page">
@@ -53,15 +53,17 @@ import { Service, ServicePayload } from '../../core/models/service.model';
 
             <ng-container matColumnDef="price">
               <th mat-header-cell *matHeaderCellDef>Prix</th>
-              <td mat-cell *matCellDef="let s">{{ (s.price ?? 0) | currency:'XOF':'symbol':'1.0-0':'fr' }}</td>
+              <td mat-cell *matCellDef="let s">
+                {{ s.price != null ? (s.price | number:'1.0-0') + ' FCFA' : '—' }}
+              </td>
             </ng-container>
 
             <ng-container matColumnDef="active">
               <th mat-header-cell *matHeaderCellDef>Actif</th>
               <td mat-cell *matCellDef="let s">
-                <mat-chip [class]="s.active ? 'chip-active' : 'chip-inactive'">
+                <span [class]="s.active ? 'badge-active' : 'badge-inactive'">
                   {{ s.active ? 'Actif' : 'Inactif' }}
-                </mat-chip>
+                </span>
               </td>
             </ng-container>
 
@@ -141,6 +143,8 @@ import { Service, ServicePayload } from '../../core/models/service.model';
     .empty-table { text-align: center; color: #999; padding: 24px; }
     .chip-active   { --mdc-chip-label-text-color: white; background: #1e7e34 !important; }
     .chip-inactive { --mdc-chip-label-text-color: white; background: #9e9e9e !important; }
+    .badge-active   { background: #1e7e34; color: white; padding: 4px 12px; border-radius: 16px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+    .badge-inactive { background: #9e9e9e; color: white; padding: 4px 12px; border-radius: 16px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
     mat-spinner { display: inline-block; }
     .mat-column-actions { width: 100px; min-width: 100px; white-space: nowrap; padding: 0 4px !important; }
     .mat-column-duration { white-space: nowrap; }
