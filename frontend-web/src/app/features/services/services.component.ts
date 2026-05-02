@@ -142,7 +142,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
     .chip-active   { --mdc-chip-label-text-color: white; background: #1e7e34 !important; }
     .chip-inactive { --mdc-chip-label-text-color: white; background: #9e9e9e !important; }
     mat-spinner { display: inline-block; }
-    .mat-column-actions { width: 96px; min-width: 96px; white-space: nowrap; }
+    .mat-column-actions { width: 100px; min-width: 100px; white-space: nowrap; padding: 0 4px !important; }
     .mat-column-duration { white-space: nowrap; }
     .mat-column-price { white-space: nowrap; }
   `],
