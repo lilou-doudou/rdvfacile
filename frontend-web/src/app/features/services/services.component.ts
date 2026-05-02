@@ -10,7 +10,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ServiceApiService } from '../../core/services/service-api.service';
 import { Service, ServicePayload } from '../../core/models/service.model';
@@ -80,7 +79,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
-            <tr mat-row *matRowDef="let row; columns: columns;" [style.display]="row?.id ? '' : 'none'"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
           </table>
 
           @if (services().length === 0) {
@@ -174,9 +173,14 @@ export class ServicesComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.svc.getAll().subscribe(list => {
-      this.services.set((list ?? []).filter(s => s && s.id));
-      this.loading.set(false);
+    this.svc.getAll().subscribe({
+      next: (list) => {
+        this.services.set((list ?? []).filter(s => s?.id && s?.name?.trim()));
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      },
     });
   }
 
