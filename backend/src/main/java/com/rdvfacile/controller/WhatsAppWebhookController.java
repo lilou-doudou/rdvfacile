@@ -5,12 +5,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +35,7 @@ import com.rdvfacile.repository.ServiceRepository;
 import com.rdvfacile.service.AppointmentService;
 import com.rdvfacile.service.CustomerService;
 import com.rdvfacile.service.WhatsAppService;
+import com.twilio.security.RequestValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +63,9 @@ public class WhatsAppWebhookController {
     private final CustomerRepository customerRepository;
     private final AppointmentRepository appointmentRepository;
 
+    @Value("${twilio.auth-token:}")
+    private String twilioAuthToken;
+
     private static final DateTimeFormatter SLOT_FORMAT = DateTimeFormatter.ofPattern("EEE dd/MM à HH:mm");
 
     /** Sessions en mémoire (MVP — remplacer par Redis en production). */
@@ -63,10 +73,17 @@ public class WhatsAppWebhookController {
 
     @PostMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<String> handleIncoming(
+            HttpServletRequest request,
+            @RequestParam Map<String, String> allParams,
             @RequestParam("From") String from,
             @RequestParam("Body") String body,
             @RequestParam(value = "To", defaultValue = "") String to,
             @RequestParam(value = "ProfileName", defaultValue = "") String profileName) {
+
+        if (!validateTwilioSignature(request, allParams)) {
+            log.warn("Requête webhook rejetée : signature Twilio invalide (IP: {})", request.getRemoteAddr());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         String phone = from.replace("whatsapp:+", "").replace("whatsapp:", "");
         String toPhone = to.replace("whatsapp:+", "").replace("whatsapp:", "");
@@ -269,6 +286,28 @@ public class WhatsAppWebhookController {
             }
         }
         return result;
+    }
+
+    private boolean validateTwilioSignature(HttpServletRequest request, Map<String, String> params) {
+        if (!StringUtils.hasText(twilioAuthToken)) {
+            log.warn("TWILIO_AUTH_TOKEN non configuré — validation de signature ignorée (dev uniquement)");
+            return true;
+        }
+        String signature = request.getHeader("X-Twilio-Signature");
+        if (!StringUtils.hasText(signature)) {
+            log.warn("En-tête X-Twilio-Signature absent");
+            return false;
+        }
+        String url = reconstructUrl(request);
+        return new RequestValidator(twilioAuthToken).validate(url, params, signature);
+    }
+
+    private String reconstructUrl(HttpServletRequest request) {
+        String proto = Optional.ofNullable(request.getHeader("X-Forwarded-Proto"))
+                .orElse(request.getScheme());
+        String host = Optional.ofNullable(request.getHeader("X-Forwarded-Host"))
+                .orElseGet(() -> request.getHeader("Host"));
+        return proto + "://" + host + request.getRequestURI();
     }
 
     private static ResponseEntity<String> twimlOk() {
