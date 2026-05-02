@@ -216,7 +216,7 @@ export class ServicesComponent implements OnInit {
     this.svcForm.reset({
       name:            service?.name ?? '',
       durationMinutes: service?.durationMinutes ?? 30,
-      price:           service?.price ?? 0,
+      price:           service?.price ?? null,
       active:          service?.active ?? true,
     });
     this.dialog.open(this.serviceDialogRef);
