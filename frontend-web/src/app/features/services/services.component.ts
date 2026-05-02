@@ -199,7 +199,7 @@ export class ServicesComponent implements OnInit {
   svcForm = this.fb.group({
     name:            ['', Validators.required],
     durationMinutes: [30, [Validators.required, Validators.min(15)]],
-    price:           [null, [Validators.min(0), Validators.max(9999999999)]],
+    price:           [null as number | null, [Validators.min(0), Validators.max(9999999999)]],
     active:          [true],
   });
 
