@@ -112,7 +112,13 @@ import { Service, ServicePayload } from '../../core/models/service.model';
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Prix (FCFA)</mat-label>
-            <input matInput type="number" formControlName="price" min="0" />
+            <input matInput type="number" formControlName="price" min="0" placeholder="Optionnel" />
+            @if (svcForm.get('price')?.hasError('min')) {
+              <mat-error>Le prix ne peut pas être négatif</mat-error>
+            }
+            @if (svcForm.get('price')?.hasError('max')) {
+              <mat-error>Prix trop élevé</mat-error>
+            }
           </mat-form-field>
 
           <mat-slide-toggle formControlName="active" color="primary">
@@ -188,8 +194,8 @@ export class ServicesComponent implements OnInit {
 
   svcForm = this.fb.group({
     name:            ['', Validators.required],
-    durationMinutes: [30, [Validators.required, Validators.min(5)]],
-    price:           [0, Validators.required],
+    durationMinutes: [30, [Validators.required, Validators.min(15)]],
+    price:           [null, [Validators.min(0), Validators.max(9999999999)]],
     active:          [true],
   });
 
