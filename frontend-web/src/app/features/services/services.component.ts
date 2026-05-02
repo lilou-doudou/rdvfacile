@@ -53,7 +53,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
 
             <ng-container matColumnDef="price">
               <th mat-header-cell *matHeaderCellDef>Prix</th>
-              <td mat-cell *matCellDef="let s">{{ s.price | currency:'XOF':'symbol':'1.0-0':'fr' }}</td>
+              <td mat-cell *matCellDef="let s">{{ (s.price ?? 0) | currency:'XOF':'symbol':'1.0-0':'fr' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="active">
