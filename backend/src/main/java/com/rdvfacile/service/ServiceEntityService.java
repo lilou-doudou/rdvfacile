@@ -24,7 +24,9 @@ public class ServiceEntityService {
 
     public List<ServiceResponse> getAll(UUID businessId) {
         return serviceRepository.findByBusinessIdAndActiveTrue(businessId)
-                .stream().map(this::toResponse).toList();
+                .stream()
+                .filter(e -> e.getName() != null && !e.getName().isBlank())
+                .map(this::toResponse).toList();
     }
 
     public ServiceResponse getById(UUID id, UUID businessId) {

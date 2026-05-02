@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, ChangeDetectorRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -36,7 +36,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
         <div class="loading-center"><mat-spinner diameter="40" /></div>
       } @else {
         <mat-card class="table-card">
-          <table mat-table [dataSource]="services()" class="full-width">
+          <table mat-table [dataSource]="servicesData" class="full-width">
 
             <ng-container matColumnDef="name">
               <th mat-header-cell *matHeaderCellDef>Nom</th>
@@ -69,11 +69,11 @@ import { Service, ServicePayload } from '../../core/models/service.model';
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let s">
-                <button mat-icon-button (click)="openDialog(s)" title="Modifier">
-                  <mat-icon>edit</mat-icon>
+                <button class="action-btn" (click)="openDialog(s)" title="Modifier" type="button">
+                  <span class="material-icons">edit</span>
                 </button>
-                <button mat-icon-button color="warn" (click)="deleteService(s.id)" title="Supprimer">
-                  <mat-icon>delete</mat-icon>
+                <button class="action-btn warn" (click)="deleteService(s.id)" title="Supprimer" type="button">
+                  <span class="material-icons">delete</span>
                 </button>
               </td>
             </ng-container>
@@ -82,7 +82,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
             <tr mat-row *matRowDef="let row; columns: columns;"></tr>
           </table>
 
-          @if (services().length === 0) {
+          @if (servicesData.length === 0) {
             <p class="empty-table">Aucun service créé. Commencez par en ajouter un !</p>
           }
         </mat-card>
@@ -148,6 +148,11 @@ import { Service, ServicePayload } from '../../core/models/service.model';
     .mat-column-actions { width: 100px; min-width: 100px; white-space: nowrap; padding: 0 4px !important; }
     .mat-column-duration { white-space: nowrap; }
     .mat-column-price { white-space: nowrap; }
+    .action-btn { background: none; border: none; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0; color: rgba(0,0,0,.6); transition: background .15s; }
+    .action-btn:hover { background: rgba(0,0,0,.06); }
+    .action-btn.warn { color: #d32f2f; }
+    .action-btn.warn:hover { background: rgba(211,47,47,.08); }
+    .action-btn .material-icons { font-size: 20px; }
   `],
 })
 export class ServicesComponent implements OnInit {
@@ -157,11 +162,12 @@ export class ServicesComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snack  = inject(MatSnackBar);
   private readonly fb     = inject(FormBuilder);
+  private readonly cdr    = inject(ChangeDetectorRef);
 
   readonly loading   = signal(true);
   readonly saving    = signal(false);
-  readonly services  = signal<Service[]>([]);
   readonly editingId = signal<string | null>(null);
+  servicesData: Service[] = [];
 
   readonly columns = ['name', 'duration', 'price', 'active', 'actions'];
 
@@ -175,8 +181,9 @@ export class ServicesComponent implements OnInit {
   ngOnInit() {
     this.svc.getAll().subscribe({
       next: (list) => {
-        this.services.set((list ?? []).filter(s => s?.id && s?.name?.trim()));
+        this.servicesData = (list ?? []).filter(s => s?.id && s?.name?.trim());
         this.loading.set(false);
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading.set(false);
@@ -204,12 +211,14 @@ export class ServicesComponent implements OnInit {
     const obs = id ? this.svc.update(id, payload) : this.svc.create(payload);
     obs.subscribe({
       next: (saved) => {
-        this.services.update(list =>
-          id ? list.map(s => s.id === id ? saved : s)
-             : [...list, saved]
-        );
+        if (id) {
+          this.servicesData = this.servicesData.map(s => s.id === id ? saved : s);
+        } else {
+          this.servicesData = [...this.servicesData, saved];
+        }
         this.dialog.closeAll();
         this.saving.set(false);
+        this.cdr.markForCheck();
         this.snack.open('Service enregistré', '', { duration: 3000 });
       },
       error: (err) => {
@@ -222,7 +231,8 @@ export class ServicesComponent implements OnInit {
   deleteService(id: string) {
     this.svc.delete(id).subscribe({
       next: () => {
-        this.services.update(list => list.filter(s => s.id !== id));
+        this.servicesData = this.servicesData.filter(s => s.id !== id);
+        this.cdr.markForCheck();
         this.snack.open('Service supprimé', '', { duration: 3000 });
       },
     });
