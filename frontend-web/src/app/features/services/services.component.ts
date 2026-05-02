@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,6 +13,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ServiceApiService } from '../../core/services/service-api.service';
 import { Service, ServicePayload } from '../../core/models/service.model';
+
+function minDurationValidator(group: AbstractControl): ValidationErrors | null {
+  const h = Number(group.get('durationHours')?.value) || 0;
+  const m = Number(group.get('durationMins')?.value) || 0;
+  return (h * 60 + m) >= 15 ? null : { minDuration: true };
+}
 
 @Component({
   selector: 'app-confirm-delete-dialog',
@@ -67,7 +73,7 @@ export class ConfirmDeleteDialogComponent {
 
             <ng-container matColumnDef="duration">
               <th mat-header-cell *matHeaderCellDef>Durée</th>
-              <td mat-cell *matCellDef="let s">{{ s.durationMinutes }} min</td>
+              <td mat-cell *matCellDef="let s">{{ formatDuration(s.durationMinutes) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="price">
@@ -122,13 +128,25 @@ export class ConfirmDeleteDialogComponent {
             }
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Durée (minutes)</mat-label>
-            <input matInput type="number" formControlName="durationMinutes" min="5" />
-            @if (svcForm.get('durationMinutes')?.hasError('min')) {
-              <mat-error>Minimum 5 minutes</mat-error>
-            }
-          </mat-form-field>
+          <div style="display:flex;gap:12px">
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Heures</mat-label>
+              <input matInput type="number" formControlName="durationHours" min="0" max="23" />
+              @if (svcForm.get('durationHours')?.hasError('max')) {
+                <mat-error>Max 23h</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="flex:1">
+              <mat-label>Minutes</mat-label>
+              <input matInput type="number" formControlName="durationMins" min="0" max="59" />
+              @if (svcForm.get('durationMins')?.hasError('max')) {
+                <mat-error>Max 59 min</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          @if (svcForm.hasError('minDuration') && (svcForm.get('durationHours')?.touched || svcForm.get('durationMins')?.touched)) {
+            <p style="color:#d32f2f;font-size:.75rem;margin:-8px 0 4px">Durée minimale : 15 minutes</p>
+          }
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Prix (FCFA)</mat-label>
@@ -196,11 +214,12 @@ export class ServicesComponent implements OnInit {
   readonly columns = ['name', 'duration', 'price', 'active', 'actions'];
 
   svcForm = this.fb.group({
-    name:            ['', Validators.required],
-    durationMinutes: [30, [Validators.required, Validators.min(15)]],
-    price:           [null as number | null, [Validators.min(0), Validators.max(9999999999)]],
-    active:          [true],
-  });
+    name:          ['', Validators.required],
+    durationHours: [0,  [Validators.required, Validators.min(0), Validators.max(23)]],
+    durationMins:  [30, [Validators.required, Validators.min(0), Validators.max(59)]],
+    price:         [null as number | null, [Validators.min(0), Validators.max(9999999999)]],
+    active:        [true],
+  }, { validators: minDurationValidator });
 
   ngOnInit() {
     this.svc.getAll().subscribe({
@@ -216,11 +235,13 @@ export class ServicesComponent implements OnInit {
 
   openDialog(service?: Service) {
     this.editingId.set(service?.id ?? null);
+    const totalMin = service?.durationMinutes ?? 30;
     this.svcForm.reset({
-      name:            service?.name ?? '',
-      durationMinutes: service?.durationMinutes ?? 30,
-      price:           service?.price ?? null,
-      active:          service?.active ?? true,
+      name:          service?.name ?? '',
+      durationHours: Math.floor(totalMin / 60),
+      durationMins:  totalMin % 60,
+      price:         service?.price ?? null,
+      active:        service?.active ?? true,
     });
     this.dialog.open(this.serviceDialogRef);
   }
@@ -228,7 +249,13 @@ export class ServicesComponent implements OnInit {
   saveService() {
     if (this.svcForm.invalid) return;
     this.saving.set(true);
-    const payload: ServicePayload = this.svcForm.value as ServicePayload;
+    const raw = this.svcForm.value;
+    const payload: ServicePayload = {
+      name:            raw.name!,
+      durationMinutes: (Number(raw.durationHours) || 0) * 60 + (Number(raw.durationMins) || 0),
+      price:           raw.price ?? undefined,
+      active:          raw.active ?? true,
+    };
     const id = this.editingId();
 
     const obs = id ? this.svc.update(id, payload) : this.svc.create(payload);
@@ -258,6 +285,15 @@ export class ServicesComponent implements OnInit {
     ref.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) this.doDelete(service.id);
     });
+  }
+
+  formatDuration(minutes: number): string {
+    if (!minutes) return '0 min';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h === 0) return `${m} min`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m}min`;
   }
 
   doDelete(id: string) {
