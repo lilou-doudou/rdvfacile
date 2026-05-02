@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -13,6 +13,26 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ServiceApiService } from '../../core/services/service-api.service';
 import { Service, ServicePayload } from '../../core/models/service.model';
+
+@Component({
+  selector: 'app-confirm-delete-dialog',
+  standalone: true,
+  imports: [MatDialogModule, MatButtonModule],
+  template: `
+    <h2 mat-dialog-title>Supprimer le service</h2>
+    <mat-dialog-content>
+      <p>Êtes-vous sûr de vouloir supprimer <strong>{{ data.name }}</strong> ?</p>
+      <p style="color:#666;font-size:.85rem;margin-top:4px">Cette action est irréversible.</p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button [mat-dialog-close]="false">Annuler</button>
+      <button mat-raised-button color="warn" [mat-dialog-close]="true">Supprimer</button>
+    </mat-dialog-actions>
+  `,
+})
+export class ConfirmDeleteDialogComponent {
+  readonly data = inject<{ name: string }>(MAT_DIALOG_DATA);
+}
 
 @Component({
   selector: 'app-services',
@@ -89,7 +109,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
       }
     </div>
 
-    <!-- Dialog -->
+    <!-- Dialog édition/création -->
     <ng-template #serviceDialog>
       <h2 mat-dialog-title>{{ editingId() ? 'Modifier' : 'Nouveau' }} service</h2>
       <mat-dialog-content>
@@ -136,19 +156,6 @@ import { Service, ServicePayload } from '../../core/models/service.model';
         </button>
       </mat-dialog-actions>
     </ng-template>
-
-    <!-- Dialog confirmation suppression -->
-    <ng-template #confirmDialog>
-      <h2 mat-dialog-title>Supprimer le service</h2>
-      <mat-dialog-content>
-        <p>Êtes-vous sûr de vouloir supprimer <strong>{{ deletingName() }}</strong> ?</p>
-        <p style="color:#666;font-size:.85rem;margin-top:4px">Cette action est irréversible.</p>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close>Annuler</button>
-        <button mat-raised-button color="warn" (click)="doDelete()">Supprimer</button>
-      </mat-dialog-actions>
-    </ng-template>
   `,
   styles: [`
     .services-page { max-width: 900px; }
@@ -176,7 +183,6 @@ import { Service, ServicePayload } from '../../core/models/service.model';
 })
 export class ServicesComponent implements OnInit {
   @ViewChild('serviceDialog') serviceDialogRef!: any;
-  @ViewChild('confirmDialog') confirmDialogRef!: any;
 
   private readonly svc   = inject(ServiceApiService);
   private readonly dialog = inject(MatDialog);
@@ -186,8 +192,6 @@ export class ServicesComponent implements OnInit {
   readonly loading    = signal(true);
   readonly saving     = signal(false);
   readonly editingId  = signal<string | null>(null);
-  readonly deletingId   = signal<string | null>(null);
-  readonly deletingName = signal<string>('');
   readonly dataSource = new MatTableDataSource<Service>();
 
   readonly columns = ['name', 'duration', 'price', 'active', 'actions'];
@@ -248,31 +252,23 @@ export class ServicesComponent implements OnInit {
   }
 
   confirmDelete(service: Service) {
-    this.deletingId.set(service.id);
-    this.deletingName.set(service.name);
-    this.dialog.open(this.confirmDialogRef);
+    const ref = this.dialog.open(ConfirmDeleteDialogComponent, {
+      data: { name: service.name },
+      width: '360px',
+    });
+    ref.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) this.doDelete(service.id);
+    });
   }
 
-  doDelete() {
-    const id = this.deletingId();
-    if (!id) return;
+  doDelete(id: string) {
     this.svc.delete(id).subscribe({
       next: () => {
         this.dataSource.data = this.dataSource.data.filter(s => s.id !== id);
-        this.dialog.closeAll();
         this.snack.open('Service supprimé', '', { duration: 3000 });
       },
       error: () => {
         this.snack.open('Erreur lors de la suppression', 'Fermer', { duration: 4000 });
-      },
-    });
-  }
-
-  deleteService(id: string) {
-    this.svc.delete(id).subscribe({
-      next: () => {
-        this.dataSource.data = this.dataSource.data.filter(s => s.id !== id);
-        this.snack.open('Service supprimé', '', { duration: 3000 });
       },
     });
   }
