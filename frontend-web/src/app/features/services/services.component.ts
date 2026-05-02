@@ -135,13 +135,16 @@ import { Service, ServicePayload } from '../../core/models/service.model';
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
     .loading-center { display: flex; justify-content: center; padding: 60px; }
-    .table-card { border-radius: 12px !important; overflow: hidden; }
-    .full-width { width: 100%; }
+    .table-card { border-radius: 12px !important; overflow-x: auto; }
+    .full-width { width: 100%; min-width: 480px; }
     .dialog-form { display: flex; flex-direction: column; gap: 12px; min-width: 320px; padding-top: 8px; }
     .empty-table { text-align: center; color: #999; padding: 24px; }
     .chip-active   { --mdc-chip-label-text-color: white; background: #1e7e34 !important; }
     .chip-inactive { --mdc-chip-label-text-color: white; background: #9e9e9e !important; }
     mat-spinner { display: inline-block; }
+    .mat-column-actions { width: 96px; min-width: 96px; white-space: nowrap; }
+    .mat-column-duration { white-space: nowrap; }
+    .mat-column-price { white-space: nowrap; }
   `],
 })
 export class ServicesComponent implements OnInit {
