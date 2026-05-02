@@ -4,8 +4,10 @@ import com.rdvfacile.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +22,15 @@ public class JwtUtils {
 
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
+
+    @PostConstruct
+    public void validateSecret() {
+        if (!StringUtils.hasText(jwtSecret) || jwtSecret.length() < 32) {
+            throw new IllegalStateException(
+                "JWT_SECRET env var is missing or too short (minimum 32 characters). " +
+                "Set JWT_SECRET in your environment variables.");
+        }
+    }
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
