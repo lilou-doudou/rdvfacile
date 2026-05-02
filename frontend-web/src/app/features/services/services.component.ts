@@ -1,7 +1,7 @@
-import { Component, ChangeDetectorRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
@@ -36,7 +36,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
         <div class="loading-center"><mat-spinner diameter="40" /></div>
       } @else {
         <mat-card class="table-card">
-          <table mat-table [dataSource]="servicesData" class="full-width">
+          <table mat-table [dataSource]="dataSource" class="full-width">
 
             <ng-container matColumnDef="name">
               <th mat-header-cell *matHeaderCellDef>Nom</th>
@@ -72,7 +72,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
                 <button class="action-btn" (click)="openDialog(s)" title="Modifier" type="button">
                   <span class="material-icons">edit</span>
                 </button>
-                <button class="action-btn warn" (click)="deleteService(s.id)" title="Supprimer" type="button">
+                <button class="action-btn warn" (click)="confirmDelete(s)" title="Supprimer" type="button">
                   <span class="material-icons">delete</span>
                 </button>
               </td>
@@ -82,7 +82,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
             <tr mat-row *matRowDef="let row; columns: columns;"></tr>
           </table>
 
-          @if (servicesData.length === 0) {
+          @if (dataSource.data.length === 0) {
             <p class="empty-table">Aucun service créé. Commencez par en ajouter un !</p>
           }
         </mat-card>
@@ -130,6 +130,19 @@ import { Service, ServicePayload } from '../../core/models/service.model';
         </button>
       </mat-dialog-actions>
     </ng-template>
+
+    <!-- Dialog confirmation suppression -->
+    <ng-template #confirmDialog>
+      <h2 mat-dialog-title>Supprimer le service</h2>
+      <mat-dialog-content>
+        <p>Êtes-vous sûr de vouloir supprimer <strong>{{ deletingName() }}</strong> ?</p>
+        <p style="color:#666;font-size:.85rem;margin-top:4px">Cette action est irréversible.</p>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close>Annuler</button>
+        <button mat-raised-button color="warn" (click)="doDelete()">Supprimer</button>
+      </mat-dialog-actions>
+    </ng-template>
   `,
   styles: [`
     .services-page { max-width: 900px; }
@@ -157,17 +170,19 @@ import { Service, ServicePayload } from '../../core/models/service.model';
 })
 export class ServicesComponent implements OnInit {
   @ViewChild('serviceDialog') serviceDialogRef!: any;
+  @ViewChild('confirmDialog') confirmDialogRef!: any;
 
   private readonly svc   = inject(ServiceApiService);
   private readonly dialog = inject(MatDialog);
   private readonly snack  = inject(MatSnackBar);
   private readonly fb     = inject(FormBuilder);
-  private readonly cdr    = inject(ChangeDetectorRef);
 
-  readonly loading   = signal(true);
-  readonly saving    = signal(false);
-  readonly editingId = signal<string | null>(null);
-  servicesData: Service[] = [];
+  readonly loading    = signal(true);
+  readonly saving     = signal(false);
+  readonly editingId  = signal<string | null>(null);
+  readonly deletingId   = signal<string | null>(null);
+  readonly deletingName = signal<string>('');
+  readonly dataSource = new MatTableDataSource<Service>();
 
   readonly columns = ['name', 'duration', 'price', 'active', 'actions'];
 
@@ -181,9 +196,8 @@ export class ServicesComponent implements OnInit {
   ngOnInit() {
     this.svc.getAll().subscribe({
       next: (list) => {
-        this.servicesData = (list ?? []).filter(s => s?.id && s?.name?.trim());
+        this.dataSource.data = (list ?? []).filter(s => s?.id && s?.name?.trim());
         this.loading.set(false);
-        this.cdr.markForCheck();
       },
       error: () => {
         this.loading.set(false);
@@ -212,13 +226,12 @@ export class ServicesComponent implements OnInit {
     obs.subscribe({
       next: (saved) => {
         if (id) {
-          this.servicesData = this.servicesData.map(s => s.id === id ? saved : s);
+          this.dataSource.data = this.dataSource.data.map(s => s.id === id ? saved : s);
         } else {
-          this.servicesData = [...this.servicesData, saved];
+          this.dataSource.data = [...this.dataSource.data, saved];
         }
         this.dialog.closeAll();
         this.saving.set(false);
-        this.cdr.markForCheck();
         this.snack.open('Service enregistré', '', { duration: 3000 });
       },
       error: (err) => {
@@ -228,11 +241,31 @@ export class ServicesComponent implements OnInit {
     });
   }
 
+  confirmDelete(service: Service) {
+    this.deletingId.set(service.id);
+    this.deletingName.set(service.name);
+    this.dialog.open(this.confirmDialogRef);
+  }
+
+  doDelete() {
+    const id = this.deletingId();
+    if (!id) return;
+    this.svc.delete(id).subscribe({
+      next: () => {
+        this.dataSource.data = this.dataSource.data.filter(s => s.id !== id);
+        this.dialog.closeAll();
+        this.snack.open('Service supprimé', '', { duration: 3000 });
+      },
+      error: () => {
+        this.snack.open('Erreur lors de la suppression', 'Fermer', { duration: 4000 });
+      },
+    });
+  }
+
   deleteService(id: string) {
     this.svc.delete(id).subscribe({
       next: () => {
-        this.servicesData = this.servicesData.filter(s => s.id !== id);
-        this.cdr.markForCheck();
+        this.dataSource.data = this.dataSource.data.filter(s => s.id !== id);
         this.snack.open('Service supprimé', '', { duration: 3000 });
       },
     });
