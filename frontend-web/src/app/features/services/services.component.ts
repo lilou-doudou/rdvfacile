@@ -78,7 +78,7 @@ import { Service, ServicePayload } from '../../core/models/service.model';
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
-            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;" [style.display]="row?.id ? '' : 'none'"></tr>
           </table>
 
           @if (services().length === 0) {
@@ -170,7 +170,10 @@ export class ServicesComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.svc.getAll().subscribe(list => { this.services.set(list); this.loading.set(false); });
+    this.svc.getAll().subscribe(list => {
+      this.services.set((list ?? []).filter(s => s && s.id));
+      this.loading.set(false);
+    });
   }
 
   openDialog(service?: Service) {
