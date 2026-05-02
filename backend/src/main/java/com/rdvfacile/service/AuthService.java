@@ -1,6 +1,10 @@
 package com.rdvfacile.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.HexFormat;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -73,7 +77,7 @@ public class AuthService {
         user.setRole(UserRole.OWNER);
         user.setBusiness(business);
         user.setEmailVerified(false);
-        user.setVerificationToken(verificationToken);
+        user.setVerificationToken(hashToken(verificationToken));
         userRepository.save(user);
 
         sendVerificationEmail(user.getEmail(), user.getFullName(), verificationToken);
@@ -120,7 +124,7 @@ public class AuthService {
     public void forgotPassword(ForgotPasswordRequest request) {
         userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
             String token = UUID.randomUUID().toString();
-            user.setResetToken(token);
+            user.setResetToken(hashToken(token));
             user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
             userRepository.save(user);
 
@@ -145,7 +149,7 @@ public class AuthService {
 
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        User user = userRepository.findByResetToken(request.getToken())
+        User user = userRepository.findByResetToken(hashToken(request.getToken()))
                 .orElseThrow(() -> new BusinessException("Lien de réinitialisation invalide ou expiré"));
 
         if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
@@ -160,11 +164,21 @@ public class AuthService {
 
     @Transactional
     public void verifyEmail(String token) {
-        User user = userRepository.findByVerificationToken(token)
+        User user = userRepository.findByVerificationToken(hashToken(token))
                 .orElseThrow(() -> new BusinessException("Lien de vérification invalide ou déjà utilisé"));
         user.setEmailVerified(true);
         user.setVerificationToken(null);
         userRepository.save(user);
+    }
+
+    private String hashToken(String token) {
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256")
+                    .digest(token.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 non disponible", e);
+        }
     }
 
     @Transactional
@@ -174,7 +188,7 @@ public class AuthService {
                 throw new BusinessException("Ce compte est déjà vérifié");
             }
             String token = UUID.randomUUID().toString();
-            user.setVerificationToken(token);
+            user.setVerificationToken(hashToken(token));
             userRepository.save(user);
             sendVerificationEmail(user.getEmail(), user.getFullName(), token);
         });
