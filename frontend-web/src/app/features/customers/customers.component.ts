@@ -121,14 +121,37 @@ import { Customer, CustomerPayload } from '../../core/models/customer.model';
   `,
   styles: [`
     .customers-page { max-width: 900px; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #1A1A2E;
+    }
+
     .search-field { width: 100%; margin-bottom: 20px; }
     .loading-center { display: flex; justify-content: center; padding: 60px; }
-    .table-card { border-radius: 12px !important; overflow: hidden; }
+
+    .table-card {
+      border-radius: 16px !important;
+      overflow: hidden;
+      border: 1px solid #EAE4DC;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05) !important;
+    }
+
     .full-width { width: 100%; }
     .dialog-form { display: flex; flex-direction: column; gap: 12px; min-width: 320px; padding-top: 8px; }
-    .empty-table { text-align: center; color: #999; padding: 24px; }
+    .empty-table { text-align: center; color: #9E9E9E; padding: 32px; font-size: .9rem; }
     mat-spinner { display: inline-block; }
   `],
 })

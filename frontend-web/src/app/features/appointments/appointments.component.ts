@@ -134,10 +134,34 @@ import { Customer } from '../../core/models/customer.model';
   `,
   styles: [`
     .appointments-page { height: 100%; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
-    .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #1A1A2E;
+    }
+
     .loading-bar { margin-bottom: 8px; border-radius: 4px; }
-    .calendar-card { padding: 8px; border-radius: 12px !important; overflow-x: auto; }
+
+    .calendar-card {
+      padding: 12px;
+      border-radius: 16px !important;
+      overflow-x: auto;
+      border: 1px solid #EAE4DC;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05) !important;
+    }
+
     .dialog-form { display: flex; flex-direction: column; gap: 8px; min-width: min(340px, 90vw); padding-top: 8px; }
     .full-width { width: 100%; }
     .detail-content p { margin: 8px 0; }
@@ -188,7 +212,7 @@ export class AppointmentsComponent implements OnInit {
     events:        [],
     eventClick:    (arg: EventClickArg) => this.onEventClick(arg),
     select:        (arg: DateSelectArg) => this.onDateSelect(arg),
-    eventColor:    '#1e7e34',
+    eventColor:    '#E8600A',
   };
 
   ngOnInit() {

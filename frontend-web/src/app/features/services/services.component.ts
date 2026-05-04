@@ -177,23 +177,47 @@ export class ConfirmDeleteDialogComponent {
   `,
   styles: [`
     .services-page { max-width: 900px; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #1A1A2E;
+    }
+
     .loading-center { display: flex; justify-content: center; padding: 60px; }
-    .table-card { border-radius: 12px !important; overflow-x: auto; }
+
+    .table-card {
+      border-radius: 16px !important;
+      overflow-x: auto;
+      border: 1px solid #EAE4DC;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05) !important;
+    }
+
     .full-width { width: 100%; min-width: 480px; }
     .dialog-form { display: flex; flex-direction: column; gap: 12px; min-width: 320px; padding-top: 8px; }
-    .empty-table { text-align: center; color: #999; padding: 24px; }
-    .chip-active   { --mdc-chip-label-text-color: white; background: #1e7e34 !important; }
-    .chip-inactive { --mdc-chip-label-text-color: white; background: #9e9e9e !important; }
-    .badge-active   { background: #1e7e34; color: white; padding: 4px 12px; border-radius: 16px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
-    .badge-inactive { background: #9e9e9e; color: white; padding: 4px 12px; border-radius: 16px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+    .empty-table { text-align: center; color: #9E9E9E; padding: 32px; font-size: .9rem; }
+
+    .badge-active   { background: #E8F5E9; color: #1E8A3E; padding: 4px 12px; border-radius: 99px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
+    .badge-inactive { background: #F5F5F5; color: #757575; padding: 4px 12px; border-radius: 99px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
+
     mat-spinner { display: inline-block; }
     .mat-column-actions { width: 100px; min-width: 100px; white-space: nowrap; padding: 0 4px !important; }
     .mat-column-duration { white-space: nowrap; }
     .mat-column-price { white-space: nowrap; }
-    .action-btn { background: none; border: none; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0; color: rgba(0,0,0,.6); transition: background .15s; }
-    .action-btn:hover { background: rgba(0,0,0,.06); }
+
+    .action-btn { background: none; border: none; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; padding: 0; color: rgba(0,0,0,.5); transition: background .15s; }
+    .action-btn:hover { background: rgba(0,0,0,.06); color: #E8600A; }
     .action-btn.warn { color: #d32f2f; }
     .action-btn.warn:hover { background: rgba(211,47,47,.08); }
   `],

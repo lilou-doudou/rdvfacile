@@ -1,14 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatStepperModule } from '@angular/material/stepper';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -16,137 +14,480 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [
     ReactiveFormsModule, RouterLink,
-    MatCardModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatSnackBarModule,
-    MatProgressSpinnerModule, MatStepperModule,
+    MatFormFieldModule, MatInputModule,
+    MatButtonModule, MatIconModule, MatSnackBarModule, MatProgressSpinnerModule,
   ],
   template: `
-    <div class="auth-page">
-      <mat-card class="auth-card">
-        <mat-card-header>
-          <div class="auth-logo">
-            <mat-icon>event_available</mat-icon>
-            <h1>RdvFacile</h1>
-          </div>
-          <mat-card-subtitle>Créez votre espace marchand</mat-card-subtitle>
-        </mat-card-header>
+    <div class="auth-layout">
 
-        <mat-card-content>
+      <!-- ── Panneau gauche (marque) ── -->
+      <div class="brand-panel">
+        <div class="brand-panel-inner">
+
+          <div class="elephant-bg" aria-hidden="true">
+            <img src="assets/images/elephant.svg" alt="" class="elephant-img" />
+          </div>
+
+          <div class="brand-logo">
+            <div class="brand-icon-box">
+              <mat-icon>event_available</mat-icon>
+            </div>
+            <div>
+              <div class="brand-name">RDVFacile</div>
+              <div class="brand-sub">Africa</div>
+            </div>
+          </div>
+
+          <div class="brand-content">
+            <h2 class="brand-headline">Démarrez votre<br>activité en ligne.</h2>
+            <p class="brand-desc">Créez votre espace marchand gratuit et gérez vos rendez-vous en quelques minutes.</p>
+
+            <div class="brand-steps">
+              <div class="brand-step">
+                <div class="step-num">1</div>
+                <span>Créez votre commerce</span>
+              </div>
+              <div class="brand-step">
+                <div class="step-num">2</div>
+                <span>Ajoutez vos services</span>
+              </div>
+              <div class="brand-step">
+                <div class="step-num">3</div>
+                <span>Recevez des clients</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="brand-badge">
+            <mat-icon>lock</mat-icon>
+            <span>Inscription gratuite — sans carte bancaire</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Panneau droit (formulaire) ── -->
+      <div class="form-panel">
+        <div class="form-inner">
+
+          <div class="mobile-logo">
+            <div class="brand-icon-box small">
+              <mat-icon>event_available</mat-icon>
+            </div>
+            <span class="brand-name-mobile">RDVFacile</span>
+          </div>
+
           @if (registered()) {
-            <div class="success-box">
-              <mat-icon color="primary">mark_email_read</mat-icon>
-              <h2>Vérifiez votre email !</h2>
-              <p>Un email de confirmation a été envoyé à <strong>{{ registeredEmail() }}</strong>.<br>
-              Cliquez sur le lien dans l'email pour activer votre compte.</p>
-              <p class="hint">Vous ne recevez pas l'email ?
+            <!-- État succès email envoyé -->
+            <div class="success-state">
+              <div class="success-icon-wrap">
+                <mat-icon>mark_email_read</mat-icon>
+              </div>
+              <h1 class="form-title">Vérifiez votre email !</h1>
+              <p class="form-subtitle">
+                Un lien d'activation a été envoyé à<br>
+                <strong>{{ registeredEmail() }}</strong>
+              </p>
+              <p class="resend-hint">
+                Vous ne recevez pas l'email ?
                 <button mat-button color="primary" (click)="resend()">Renvoyer</button>
               </p>
             </div>
           } @else {
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-            <!-- Commerce -->
-            <p class="section-label"><mat-icon>store</mat-icon> Votre commerce</p>
+            <h1 class="form-title">Créer un espace</h1>
+            <p class="form-subtitle">Votre back-office professionnel en 1 minute</p>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nom du commerce</mat-label>
-              <input matInput formControlName="businessName" />
-              @if (form.get('businessName')?.hasError('required') && form.get('businessName')?.touched) {
-                <mat-error>Champ requis</mat-error>
-              }
-            </mat-form-field>
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Téléphone WhatsApp</mat-label>
-              <mat-icon matPrefix>whatsapp</mat-icon>
-              <input matInput formControlName="businessPhone" placeholder="+224612345678" />
-              @if (form.get('businessPhone')?.invalid && form.get('businessPhone')?.touched) {
-                <mat-error>Numéro requis (format international)</mat-error>
-              }
-            </mat-form-field>
+              <!-- Section commerce -->
+              <div class="section-header">
+                <div class="section-dot orange"></div>
+                <span>Votre commerce</span>
+              </div>
 
-            <!-- Compte -->
-            <p class="section-label"><mat-icon>person</mat-icon> Votre compte</p>
+              <div class="field-group">
+                <label class="field-label">Nom du commerce</label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput formControlName="businessName" placeholder="Salon Premium, Cabinet Dr. …" />
+                  @if (form.get('businessName')?.hasError('required') && form.get('businessName')?.touched) {
+                    <mat-error>Champ requis</mat-error>
+                  }
+                </mat-form-field>
+              </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Votre nom complet</mat-label>
-              <input matInput formControlName="fullName" />
-              @if (form.get('fullName')?.hasError('required') && form.get('fullName')?.touched) {
-                <mat-error>Champ requis</mat-error>
-              }
-            </mat-form-field>
+              <div class="field-group">
+                <label class="field-label">Numéro WhatsApp</label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-icon matPrefix style="color:#25D366;margin-right:4px">whatsapp</mat-icon>
+                  <input matInput formControlName="businessPhone" placeholder="+2250712345678" />
+                  @if (form.get('businessPhone')?.invalid && form.get('businessPhone')?.touched) {
+                    <mat-error>Format international requis (ex: +225…)</mat-error>
+                  }
+                </mat-form-field>
+              </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" formControlName="email" autocomplete="email" />
-              @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
-                <mat-error>Email invalide</mat-error>
-              }
-            </mat-form-field>
+              <!-- Section compte -->
+              <div class="section-header">
+                <div class="section-dot dark"></div>
+                <span>Votre compte</span>
+              </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Mot de passe</mat-label>
-              <input matInput
-                     [type]="showPassword() ? 'text' : 'password'"
-                     formControlName="password"
-                     autocomplete="new-password" />
-              <button mat-icon-button matSuffix type="button"
-                      (click)="showPassword.set(!showPassword())">
-                <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+              <div class="field-group">
+                <label class="field-label">Nom complet</label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput formControlName="fullName" placeholder="Prénom Nom" />
+                  @if (form.get('fullName')?.hasError('required') && form.get('fullName')?.touched) {
+                    <mat-error>Champ requis</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label">Email</label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput type="email" formControlName="email"
+                         autocomplete="email" placeholder="vous@exemple.com" />
+                  @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+                    <mat-error>Email invalide</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label">Mot de passe</label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput
+                         [type]="showPassword() ? 'text' : 'password'"
+                         formControlName="password"
+                         autocomplete="new-password"
+                         placeholder="8 caractères minimum" />
+                  <button mat-icon-button matSuffix type="button"
+                          (click)="showPassword.set(!showPassword())">
+                    <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                  </button>
+                  @if (form.get('password')?.hasError('minlength')) {
+                    <mat-error>8 caractères minimum</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <button mat-raised-button color="primary"
+                      type="submit"
+                      class="submit-btn"
+                      [disabled]="loading()">
+                @if (loading()) { <mat-spinner diameter="20" /> }
+                @else {
+                  <mat-icon>rocket_launch</mat-icon>
+                  Créer mon espace
+                }
               </button>
-              @if (form.get('password')?.hasError('minlength')) {
-                <mat-error>8 caractères minimum</mat-error>
-              }
-            </mat-form-field>
-
-            <button mat-raised-button color="primary"
-                    type="submit"
-                    class="full-width submit-btn"
-                    [disabled]="loading()">
-              @if (loading()) { <mat-spinner diameter="20" /> }
-              @else { Créer mon espace }
-            </button>
-          </form>
+            </form>
           }
-        </mat-card-content>
 
-        <mat-card-actions>
           <p class="login-link">
             Déjà un compte ? <a routerLink="/login">Se connecter</a>
           </p>
-        </mat-card-actions>
-      </mat-card>
+        </div>
+      </div>
+
     </div>
   `,
   styles: [`
-    .auth-page {
+    .auth-layout {
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 768px) {
+      .auth-layout { flex-direction: row; }
+    }
+
+    /* ── Panneau gauche ── */
+    .brand-panel {
+      background: linear-gradient(145deg, #C45208 0%, #E8600A 45%, #F9A65A 100%);
+      position: relative;
+      overflow: hidden;
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      .brand-panel {
+        display: flex;
+        flex: 0 0 42%;
+        max-width: 480px;
+      }
+    }
+
+    .brand-panel-inner {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      padding: 40px 36px;
+      width: 100%;
+    }
+
+    .elephant-bg {
+      position: absolute;
+      bottom: -20px;
+      right: -40px;
+      width: 320px;
+      height: 280px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .elephant-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0.35;
+      transform: scaleX(-1);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: auto;
+    }
+
+    .brand-icon-box {
+      width: 46px;
+      height: 46px;
+      background: rgba(255,255,255,.2);
+      border: 2px solid rgba(255,255,255,.35);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
-      padding: 16px;
+
+      mat-icon { color: white; font-size: 1.4rem; width: 1.4rem; height: 1.4rem; }
+
+      &.small {
+        width: 36px; height: 36px; border-radius: 9px;
+        background: #E8600A; border-color: transparent;
+        mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+      }
     }
-    .auth-card { width: 100%; max-width: 460px; padding: 16px; border-radius: 12px; }
-    .auth-logo {
-      display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 4px;
-      h1 { margin: 0; font-size: 1.5rem; color: #1e7e34; }
-      mat-icon { color: #1e7e34; font-size: 1.8rem; width: 1.8rem; height: 1.8rem; }
+
+    .brand-name {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: white;
+      line-height: 1;
     }
-    .section-label {
-      display: flex; align-items: center; gap: 6px;
-      color: #1e7e34; font-weight: 600; margin: 16px 0 8px;
-      mat-icon { font-size: 1.1rem; }
+
+    .brand-sub {
+      font-size: .65rem;
+      color: rgba(255,255,255,.75);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
     }
-    .full-width { width: 100%; margin-bottom: 8px; }
-    .submit-btn { height: 48px; font-size: 1rem; margin-top: 8px; }
-    .login-link { text-align: center; font-size: .875rem; color: #666; }
-    .login-link a { color: #1e7e34; font-weight: 600; text-decoration: none; }
-    .success-box { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 0; text-align: center; }
-    .success-box mat-icon { font-size: 56px; width: 56px; height: 56px; }
-    .success-box h2 { margin: 0; color: #1e7e34; }
-    .success-box p { margin: 0; color: #444; line-height: 1.6; }
-    .hint { font-size: 13px; color: #888; }
+
+    .brand-content {
+      margin-top: 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-headline {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      line-height: 1.3;
+      margin: 0 0 16px;
+    }
+
+    .brand-desc {
+      color: rgba(255,255,255,.8);
+      font-size: .95rem;
+      line-height: 1.6;
+      margin: 0 0 28px;
+    }
+
+    .brand-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .brand-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,.9);
+      font-size: .9rem;
+      font-weight: 500;
+    }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      background: rgba(255,255,255,.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: .8rem;
+      flex-shrink: 0;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 48px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 10px;
+      color: rgba(255,255,255,.85);
+      font-size: .82rem;
+      font-weight: 500;
+      position: relative;
+      z-index: 2;
+
+      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+    }
+
+    /* ── Panneau droit ── */
+    .form-panel {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      background: white;
+      padding: 32px 16px;
+      overflow-y: auto;
+    }
+
+    @media (min-width: 768px) {
+      .form-panel { align-items: center; }
+    }
+
+    .form-inner {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .mobile-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .brand-name-mobile {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #1A1A2E;
+    }
+
+    @media (min-width: 768px) {
+      .mobile-logo { display: none; }
+    }
+
+    /* Succès */
+    .success-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      padding: 24px 0;
+    }
+
+    .success-icon-wrap {
+      width: 72px;
+      height: 72px;
+      background: #E8F5E9;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+
+      mat-icon { color: #1E8A3E; font-size: 2.4rem; width: 2.4rem; height: 2.4rem; }
+    }
+
+    .resend-hint { font-size: .85rem; color: #6C757D; margin: 0; }
+
+    /* Titres */
+    .form-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #1A1A2E;
+      margin: 0 0 6px;
+    }
+
+    .form-subtitle {
+      color: #6C757D;
+      font-size: .9rem;
+      margin: 0 0 24px;
+      line-height: 1.5;
+    }
+
+    /* Sections */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0 8px;
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #6C757D;
+    }
+
+    .section-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.orange { background: #E8600A; }
+      &.dark   { background: #1A1A2E; }
+    }
+
+    /* Champs */
+    .auth-form { display: flex; flex-direction: column; gap: 0; }
+    .field-group { display: flex; flex-direction: column; }
+    .field-label { font-size: .82rem; font-weight: 600; color: #1A1A2E; margin-bottom: 4px; }
+    .full-width { width: 100%; }
+
+    .submit-btn {
+      width: 100%;
+      height: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+
+      mat-icon { font-size: 1.1rem; width: 1.1rem; height: 1.1rem; }
+      mat-spinner { display: inline-block; }
+    }
+
+    .login-link {
+      text-align: center;
+      font-size: .875rem;
+      color: #6C757D;
+      margin-top: 24px;
+
+      a { color: #E8600A; font-weight: 600; text-decoration: none;
+          &:hover { text-decoration: underline; } }
+    }
   `],
 })
 export class RegisterComponent {
@@ -155,9 +496,9 @@ export class RegisterComponent {
   private readonly fb     = inject(FormBuilder);
   private readonly snack  = inject(MatSnackBar);
 
-  readonly showPassword  = signal(false);
-  readonly loading       = signal(false);
-  readonly registered    = signal(false);
+  readonly showPassword    = signal(false);
+  readonly loading         = signal(false);
+  readonly registered      = signal(false);
   readonly registeredEmail = signal('');
 
   form = this.fb.group({
@@ -202,3 +543,4 @@ export class RegisterComponent {
     });
   }
 }
+
