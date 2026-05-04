@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
@@ -9,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatCardModule } from '@angular/material/card';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, EventClickArg, DateSelectArg } from '@fullcalendar/core';
@@ -31,24 +33,28 @@ import { Customer } from '../../core/models/customer.model';
     FullCalendarModule,
     MatButtonModule, MatIconModule, MatDialogModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatSnackBarModule, MatProgressSpinnerModule, MatCardModule,
+    MatSnackBarModule, MatProgressSpinnerModule, MatProgressBarModule, MatCardModule,
   ],
   template: `
     <div class="appointments-page">
       <div class="page-header">
         <h2 class="page-title">Rendez-vous</h2>
-        <button mat-raised-button color="primary" (click)="openNewDialog()">
-          <mat-icon>add</mat-icon> Nouveau RDV
-        </button>
+        <div style="display:flex;gap:8px">
+          <button mat-stroked-button (click)="reloadAppointments()">
+            <mat-icon>refresh</mat-icon> Actualiser
+          </button>
+          <button mat-raised-button color="primary" (click)="openNewDialog()">
+            <mat-icon>add</mat-icon> Nouveau RDV
+          </button>
+        </div>
       </div>
 
       @if (loading()) {
-        <div class="loading-center"><mat-spinner diameter="40" /></div>
-      } @else {
-        <mat-card class="calendar-card">
-          <full-calendar [options]="calendarOptions" />
-        </mat-card>
+        <mat-progress-bar mode="indeterminate" class="loading-bar" />
       }
+      <mat-card class="calendar-card">
+        <full-calendar [options]="calendarOptions" />
+      </mat-card>
     </div>
 
     <!-- New Appointment Dialog -->
@@ -77,7 +83,7 @@ import { Customer } from '../../core/models/customer.model';
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Date et heure de début</mat-label>
-            <input matInput type="datetime-local" formControlName="startTime" />
+            <input matInput type="datetime-local" formControlName="startTime" [min]="minStartTime()" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
@@ -128,11 +134,35 @@ import { Customer } from '../../core/models/customer.model';
   `,
   styles: [`
     .appointments-page { height: 100%; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
-    .loading-center { display: flex; justify-content: center; padding: 60px; }
-    .calendar-card { padding: 16px; border-radius: 12px !important; }
-    .dialog-form { display: flex; flex-direction: column; gap: 8px; min-width: 340px; padding-top: 8px; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #1A1A2E;
+    }
+
+    .loading-bar { margin-bottom: 8px; border-radius: 4px; }
+
+    .calendar-card {
+      padding: 12px;
+      border-radius: 16px !important;
+      overflow-x: auto;
+      border: 1px solid #EAE4DC;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05) !important;
+    }
+
+    .dialog-form { display: flex; flex-direction: column; gap: 8px; min-width: min(340px, 90vw); padding-top: 8px; }
     .full-width { width: 100%; }
     .detail-content p { margin: 8px 0; }
     mat-spinner { display: inline-block; }
@@ -175,31 +205,42 @@ export class AppointmentsComponent implements OnInit {
     },
     slotMinTime:   '07:00:00',
     slotMaxTime:   '21:00:00',
-    height:        620,
+    height:        'auto',
     selectable:    true,
     selectMirror:  true,
     editable:      false,
     events:        [],
     eventClick:    (arg: EventClickArg) => this.onEventClick(arg),
     select:        (arg: DateSelectArg) => this.onDateSelect(arg),
-    eventColor:    '#1e7e34',
+    eventColor:    '#E8600A',
   };
 
   ngOnInit() {
+    this.reloadAppointments();
+    this.serviceSvc.getAll().subscribe(s => this.services.set(s));
+    this.custSvc.getAll().subscribe(c => this.customers.set(c));
+  }
+
+  reloadAppointments() {
+    this.loading.set(true);
     const now = new Date();
     const fmt = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     const start = fmt(new Date(now.getFullYear(), now.getMonth(), 1));
     const end   = fmt(new Date(now.getFullYear(), now.getMonth() + 2, 0));
 
-    this.apptSvc.getByDateRange(start, end).subscribe(appts => {
-      this.appointments.set(appts);
-      this.refreshCalendarEvents(appts);
-      this.loading.set(false);
+    this.apptSvc.getByDateRange(start, end).subscribe({
+      next: appts => {
+        this.appointments.set(appts);
+        this.refreshCalendarEvents(appts);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.snack.open('Erreur lors du chargement des rendez-vous', 'Réessayer', { duration: 5000 })
+          .onAction().subscribe(() => this.reloadAppointments());
+      },
     });
-
-    this.serviceSvc.getAll().subscribe(s => this.services.set(s));
-    this.custSvc.getAll().subscribe(c => this.customers.set(c));
   }
 
   openNewDialog(prefilledStart?: string) {
@@ -227,7 +268,7 @@ export class AppointmentsComponent implements OnInit {
         this.snack.open('Rendez-vous créé', '', { duration: 3000 });
       },
       error: (err) => {
-        this.snack.open(err.error?.message ?? 'Erreur lors de la création', 'Fermer', { duration: 4000 });
+        this.snack.open(this.extractApiError(err), 'Fermer', { duration: 5000 });
         this.saving.set(false);
       },
     });
@@ -255,8 +296,24 @@ export class AppointmentsComponent implements OnInit {
   }
 
   private onDateSelect(arg: DateSelectArg) {
-    const local = this.toLocalDatetimeInput(arg.start);
+    const selected = new Date(arg.start);
+
+    // In month view, FullCalendar often returns all-day selections at 00:00.
+    if (arg.allDay) {
+      selected.setHours(9, 0, 0, 0);
+    }
+
+    const nowPlus30Min = new Date(Date.now() + 30 * 60 * 1000);
+    if (selected < nowPlus30Min) {
+      selected.setTime(nowPlus30Min.getTime());
+    }
+
+    const local = this.toLocalDatetimeInput(selected);
     this.openNewDialog(local);
+  }
+
+  minStartTime(): string {
+    return this.toLocalDatetimeInput(new Date(Date.now() + 60 * 1000));
   }
 
   private refreshCalendarEvents(appts: Appointment[]) {
@@ -275,5 +332,30 @@ export class AppointmentsComponent implements OnInit {
   private toLocalDatetimeInput(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  private extractApiError(err: unknown): string {
+    if (!(err instanceof HttpErrorResponse)) {
+      return 'Erreur lors de la creation';
+    }
+
+    const body = err.error as { error?: string; message?: string; details?: Record<string, string> } | null;
+    if (!body) {
+      return 'Erreur lors de la creation';
+    }
+
+    if (body.error) {
+      return body.error;
+    }
+
+    if (body.message) {
+      return body.message;
+    }
+
+    if (body.details && Object.keys(body.details).length > 0) {
+      return Object.values(body.details)[0];
+    }
+
+    return 'Erreur lors de la creation';
   }
 }

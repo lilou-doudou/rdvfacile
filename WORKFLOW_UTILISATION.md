@@ -203,3 +203,11 @@ RDVFACILE repose sur une logique simple :
 - le système relie les deux pour automatiser la prise de rendez-vous
 
 Le back-office est déjà exploitable pour la gestion quotidienne. Le canal WhatsApp est la prochaine étape clé pour compléter l'expérience utilisateur de bout en bout.
+
+
+
+digitalocean console :https://cloud.digitalocean.com
+
+neon console : console.neon.tech
+
+vercel console : vercel.com/dashboard

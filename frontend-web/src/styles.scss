@@ -1,19 +1,49 @@
-// Thème Angular Material personnalisé — RdvFacile
+// ================================================================
+// RdvFacile — Design System Global
+// Palette ivoirienne : Orange · Vert · Beige · Doré
+// ================================================================
 @use '@angular/material' as mat;
 
 @include mat.core();
 
+// ── Palette orange ivoirien (primary) ───────────────────────────
 $primary-palette: mat.define-palette((
-  50:  #e8f5e9,
-  100: #c8e6c9,
-  200: #a5d6a7,
-  300: #81c784,
-  400: #66bb6a,
-  500: #1e7e34,
-  600: #1b7030,
-  700: #155c27,
-  800: #0f491e,
-  900: #083513,
+  50:  #FEF0E7,
+  100: #FDD7BA,
+  200: #FBBF8A,
+  300: #F9A65A,
+  400: #F78F34,
+  500: #E8600A,
+  600: #D4560A,
+  700: #BA4808,
+  800: #A03B06,
+  900: #7A2B04,
+  contrast: (
+    50:  #1A1A2E,
+    100: #1A1A2E,
+    200: #1A1A2E,
+    300: #1A1A2E,
+    400: #1A1A2E,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  )
+), 500);
+
+// ── Palette verte (succès / accent) ─────────────────────────────
+$accent-palette: mat.define-palette((
+  50:  #E8F5E9,
+  100: #C8E6C9,
+  200: #A5D6A7,
+  300: #81C784,
+  400: #66BB6A,
+  500: #1E8A3E,
+  600: #1B7B37,
+  700: #16662D,
+  800: #115224,
+  900: #0A3D1A,
   contrast: (
     500: white,
     600: white,
@@ -23,24 +53,75 @@ $primary-palette: mat.define-palette((
   )
 ), 500);
 
-$accent-palette: mat.define-palette(mat.$amber-palette, 600);
 $warn-palette: mat.define-palette(mat.$red-palette);
 
 $theme: mat.define-light-theme((
   color: (
     primary: $primary-palette,
-    accent: $accent-palette,
-    warn: $warn-palette,
+    accent:  $accent-palette,
+    warn:    $warn-palette,
   ),
   typography: mat.define-typography-config(
-    $font-family: 'Inter, sans-serif',
+    $font-family: 'Inter, Poppins, sans-serif',
   ),
   density: 0,
 ));
 
 @include mat.all-component-themes($theme);
 
-// Reset & base
+// ================================================================
+// Design Tokens — CSS Custom Properties
+// ================================================================
+:root {
+  // Couleurs principales
+  --color-primary:       #E8600A;
+  --color-primary-dark:  #C45208;
+  --color-primary-light: #F9A65A;
+  --color-primary-bg:    #FEF0E7;
+
+  // Succès / Validation
+  --color-success:       #1E8A3E;
+  --color-success-dark:  #16662D;
+  --color-success-light: #E8F5E9;
+
+  // Accent doré (premium)
+  --color-gold:          #C8952A;
+  --color-gold-light:    #F5E6C8;
+
+  // Danger
+  --color-danger:        #D32F2F;
+  --color-danger-light:  #FDECEA;
+
+  // Neutrals
+  --color-bg:            #F8F5F0;
+  --color-bg-card:       #FFFFFF;
+  --color-bg-sidebar:    #1A1A2E;
+  --color-text:          #1A1A2E;
+  --color-text-muted:    #6C757D;
+  --color-text-light:    #9E9E9E;
+  --color-border:        #EAE4DC;
+
+  // Shadows
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:   0 4px 12px rgba(0,0,0,.10);
+  --shadow-lg:   0 8px 24px rgba(0,0,0,.12);
+  --shadow-card: 0 2px 8px rgba(0,0,0,.07);
+
+  // Border radius
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  // Fonts
+  --font-body:    'Inter', sans-serif;
+  --font-heading: 'Poppins', 'Inter', sans-serif;
+}
+
+// ================================================================
+// Reset & Base
+// ================================================================
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -48,50 +129,182 @@ $theme: mat.define-light-theme((
 html, body {
   height: 100%;
   margin: 0;
-  font-family: 'Inter', sans-serif;
-  background-color: #f5f7fa;
-  color: #1a1a2e;
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-// Utilitaires
-.text-muted {
-  color: #6c757d;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin: 0;
 }
 
-.fw-bold {
-  font-weight: 600;
+// ================================================================
+// Utilitaires globaux
+// ================================================================
+.text-muted   { color: var(--color-text-muted); }
+.text-light   { color: var(--color-text-light); }
+.text-primary { color: var(--color-primary); }
+.text-success { color: var(--color-success); }
+.fw-bold      { font-weight: 600; }
+.fw-black     { font-weight: 700; }
+.w-100        { width: 100%; }
+
+// ================================================================
+// Page layout — en-têtes réutilisables
+// ================================================================
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.w-100 {
-  width: 100%;
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
 }
 
+.page-subtitle {
+  font-size: .9rem;
+  color: var(--color-text-muted);
+  margin: 2px 0 0;
+  text-transform: capitalize;
+}
+
+// ================================================================
 // Badges de statut
+// ================================================================
 .status-badge {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.3px;
 
-  &.booked   { background: #e8f5e9; color: #1e7e34; }
-  &.cancelled { background: #fdecea; color: #c62828; }
-  &.done     { background: #eeeeee; color: #616161; }
+  &.booked    { background: var(--color-success-light); color: var(--color-success-dark); }
+  &.cancelled { background: var(--color-danger-light);  color: var(--color-danger); }
+  &.done      { background: #EEEEEE; color: #616161; }
 }
 
-// Snackbar globale
-.snack-success { background: #1e7e34 !important; color: white !important; }
-.snack-error   { background: #c62828 !important; color: white !important; }
+// ================================================================
+// Boutons Material — overrides globaux
+// ================================================================
+button[mat-raised-button][color="primary"] {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  box-shadow: 0 2px 8px rgba(232, 96, 10, 0.30) !important;
+  transition: all 0.2s ease !important;
 
-// Card générique
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-dark) !important;
+    box-shadow: 0 4px 14px rgba(232, 96, 10, 0.40) !important;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55 !important;
+    box-shadow: none !important;
+  }
+}
+
+button[mat-stroked-button] {
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+}
+
+button[mat-button] {
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+}
+
+// ================================================================
+// Cards Material — overrides globaux
+// ================================================================
+mat-card, .mat-mdc-card {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-card) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
 .rdv-card {
-  background: white;
-  border-radius: 16px;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
 }
 
+// ================================================================
+// Tableaux Material — overrides globaux
+// ================================================================
+.mat-mdc-header-row {
+  background: var(--color-bg) !important;
+
+  .mat-mdc-header-cell {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: .75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--color-border) !important;
+  }
+}
+
+.mat-mdc-row {
+  transition: background 0.15s;
+
+  &:hover { background: #FEF8F4 !important; }
+
+  .mat-mdc-cell {
+    border-bottom: 1px solid var(--color-border) !important;
+    color: var(--color-text);
+    font-size: .9rem;
+  }
+
+  &:last-child .mat-mdc-cell { border-bottom: none !important; }
+}
+
+// ================================================================
+// Snackbar globale
+// ================================================================
+.snack-success { background: var(--color-success) !important; color: white !important; }
+.snack-error   { background: var(--color-danger)  !important; color: white !important; }
+
+// ================================================================
+// Loading & Empty states
+// ================================================================
+.loading-center, .loading-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+}
+
+.empty-state, .empty-table {
+  text-align: center;
+  color: var(--color-text-light);
+  padding: 32px 16px;
+  font-size: .9rem;
+}
+
+// ================================================================
 // Scrollbar discrète
-::-webkit-scrollbar { width: 6px; }
+// ================================================================
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary-light); }

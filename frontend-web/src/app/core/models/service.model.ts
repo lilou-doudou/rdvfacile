@@ -12,4 +12,5 @@ export interface ServicePayload {
   description?: string;
   durationMinutes: number;
   price?: number;
+  active?: boolean;
 }

@@ -1,66 +1,95 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
+import { Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatRippleModule } from '@angular/material/core';
 import { AppointmentService } from '../../core/services/appointment.service';
 import { ServiceApiService } from '../../core/services/service-api.service';
 import { CustomerService } from '../../core/services/customer.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Appointment, AppointmentStatus, STATUS_LABEL } from '../../core/models/appointment.model';
 
-interface StatCard { label: string; value: number | string; icon: string; color: string; }
+interface StatCard {
+  label: string;
+  value: number | string;
+  icon: string;
+  colorVar: string;
+  bgVar: string;
+  route: string;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    DatePipe, MatCardModule, MatIconModule,
-    MatDividerModule, MatProgressSpinnerModule, MatChipsModule,
+    DatePipe, MatButtonModule, MatIconModule,
+    MatProgressSpinnerModule, MatRippleModule,
   ],
   template: `
     <div class="dashboard">
-      <h2 class="page-title">Bonjour, {{ auth.user()?.businessName }} 👋</h2>
-      <p class="page-subtitle">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</p>
 
-      <!-- Stat cards -->
+      <!-- ── En-tête ── -->
+      <div class="dash-header">
+        <div>
+          <h1 class="page-title">Bonjour, {{ auth.user()?.businessName }} 👋</h1>
+          <p class="page-subtitle">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</p>
+        </div>
+        <button mat-raised-button color="primary" (click)="navigate('/appointments')">
+          <mat-icon>add</mat-icon> Nouveau RDV
+        </button>
+      </div>
+
       @if (loading()) {
         <div class="loading-row">
           <mat-spinner diameter="40" />
         </div>
       } @else {
+
+        <!-- ── Stat cards ── -->
         <div class="stats-grid">
           @for (card of statCards(); track card.label) {
-            <mat-card class="stat-card">
-              <div class="stat-icon" [style.background]="card.color">
-                <mat-icon>{{ card.icon }}</mat-icon>
+            <div class="stat-card" matRipple (click)="navigate(card.route)">
+              <div class="stat-icon-wrap" [style.background]="card.bgVar">
+                <mat-icon [style.color]="card.colorVar">{{ card.icon }}</mat-icon>
               </div>
-              <div class="stat-info">
-                <div class="stat-value">{{ card.value }}</div>
+              <div class="stat-body">
+                <div class="stat-value" [style.color]="card.colorVar">{{ card.value }}</div>
                 <div class="stat-label">{{ card.label }}</div>
               </div>
-            </mat-card>
+              <mat-icon class="stat-arrow">chevron_right</mat-icon>
+            </div>
           }
         </div>
 
-        <!-- Today's appointments -->
-        <mat-card class="today-card">
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>today</mat-icon> Rendez-vous aujourd'hui
-            </mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            @if (todayAppointments().length === 0) {
-              <p class="empty-state">Aucun rendez-vous aujourd'hui</p>
-            } @else {
+        <!-- ── Rendez-vous aujourd'hui ── -->
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title-group">
+              <div class="section-dot"></div>
+              <h2 class="section-title">Rendez-vous aujourd'hui</h2>
+            </div>
+            <span class="appt-count">{{ todayAppointments().length }}</span>
+          </div>
+
+          @if (todayAppointments().length === 0) {
+            <div class="empty-box">
+              <mat-icon>event_busy</mat-icon>
+              <p>Aucun rendez-vous prévu aujourd'hui</p>
+              <button mat-stroked-button color="primary" (click)="navigate('/appointments')">
+                Planifier un RDV
+              </button>
+            </div>
+          } @else {
+            <div class="appt-list">
               @for (appt of todayAppointments(); track appt.id) {
                 <div class="appt-row">
-                  <div class="appt-time">
-                    {{ appt.startTime | date:'HH:mm' }} – {{ appt.endTime | date:'HH:mm' }}
+                  <div class="appt-time-block">
+                    <span class="appt-start">{{ appt.startTime | date:'HH:mm' }}</span>
+                    <span class="appt-end">→ {{ appt.endTime | date:'HH:mm' }}</span>
                   </div>
+                  <div class="appt-divider"></div>
                   <div class="appt-info">
                     <span class="appt-customer">{{ appt.customerName }}</span>
                     <span class="appt-service">{{ appt.serviceName }}</span>
@@ -69,61 +98,236 @@ interface StatCard { label: string; value: number | string; icon: string; color:
                     {{ STATUS_LABEL[appt.status] }}
                   </span>
                 </div>
-                <mat-divider />
               }
-            }
-          </mat-card-content>
-        </mat-card>
+            </div>
+          }
+        </div>
+
       }
     </div>
   `,
   styles: [`
-    .dashboard { max-width: 960px; }
-    .page-title { font-size: 1.6rem; font-weight: 700; margin: 0 0 4px; }
-    .page-subtitle { color: #666; margin: 0 0 24px; text-transform: capitalize; }
+    .dashboard { max-width: 980px; }
 
-    .loading-row { display: flex; justify-content: center; padding: 60px; }
+    /* ── En-tête ── */
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
 
+    .page-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #1A1A2E;
+      margin: 0 0 4px;
+    }
+
+    .page-subtitle {
+      font-size: .88rem;
+      color: #6C757D;
+      margin: 0;
+      text-transform: capitalize;
+    }
+
+    /* ── Stat cards ── */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 28px;
     }
 
     .stat-card {
+      background: white;
+      border-radius: 14px;
+      border: 1px solid #EAE4DC;
+      padding: 20px;
       display: flex;
-      flex-direction: row;
       align-items: center;
       gap: 16px;
-      padding: 20px;
-      border-radius: 12px !important;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+
+      &:hover {
+        box-shadow: 0 6px 20px rgba(0,0,0,.10);
+        transform: translateY(-2px);
+      }
     }
 
-    .stat-icon {
-      width: 56px; height: 56px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      mat-icon { color: white; font-size: 1.5rem; }
+    .stat-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      mat-icon { font-size: 1.4rem; width: 1.4rem; height: 1.4rem; }
     }
 
-    .stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1; }
-    .stat-label { font-size: .85rem; color: #666; margin-top: 4px; }
+    .stat-body { flex: 1; min-width: 0; }
 
-    .today-card { border-radius: 12px !important; }
-    mat-card-title { display: flex; align-items: center; gap: 8px; }
+    .stat-value {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: .8rem;
+      color: #6C757D;
+      font-weight: 500;
+    }
+
+    .stat-arrow {
+      color: #D1C5B8;
+      font-size: 1.2rem;
+      width: 1.2rem;
+      height: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Section card ── */
+    .section-card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #EAE4DC;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #EAE4DC;
+    }
+
+    .section-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-dot {
+      width: 10px;
+      height: 10px;
+      background: #E8600A;
+      border-radius: 50%;
+    }
+
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1A1A2E;
+      margin: 0;
+    }
+
+    .appt-count {
+      background: #FEF0E7;
+      color: #E8600A;
+      font-weight: 700;
+      font-size: .85rem;
+      padding: 2px 10px;
+      border-radius: 99px;
+    }
+
+    /* ── Empty state ── */
+    .empty-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 48px 24px;
+      color: #9E9E9E;
+
+      mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; color: #D1C5B8; }
+      p { margin: 0; font-size: .9rem; }
+    }
+
+    /* ── Liste rendez-vous ── */
+    .appt-list { padding: 0 24px; }
 
     .appt-row {
-      display: flex; align-items: center; gap: 16px;
-      padding: 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid #F5F0EA;
+
+      &:last-child { border-bottom: none; }
     }
-    .appt-time { font-size: .85rem; color: #555; min-width: 100px; font-weight: 500; }
-    .appt-info { flex: 1; }
-    .appt-customer { font-weight: 600; display: block; }
-    .appt-service  { font-size: .8rem; color: #777; }
-    .empty-state { color: #999; text-align: center; padding: 24px 0; }
+
+    .appt-time-block {
+      display: flex;
+      flex-direction: column;
+      min-width: 56px;
+      flex-shrink: 0;
+    }
+
+    .appt-start {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: .9rem;
+      color: #1A1A2E;
+    }
+
+    .appt-end {
+      font-size: .75rem;
+      color: #9E9E9E;
+    }
+
+    .appt-divider {
+      width: 3px;
+      height: 36px;
+      background: #E8600A;
+      border-radius: 99px;
+      flex-shrink: 0;
+      opacity: 0.35;
+    }
+
+    .appt-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .appt-customer {
+      font-weight: 600;
+      font-size: .9rem;
+      display: block;
+      color: #1A1A2E;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .appt-service {
+      font-size: .78rem;
+      color: #6C757D;
+    }
+
+    .loading-row { display: flex; justify-content: center; padding: 60px; }
+
+    @media (max-width: 480px) {
+      .stat-card { padding: 16px; }
+      .stat-value { font-size: 1.6rem; }
+      .dash-header { flex-direction: column; align-items: flex-start; }
+    }
   `],
 })
 export class DashboardComponent implements OnInit {
+  private readonly router     = inject(Router);
   readonly auth               = inject(AuthService);
   private readonly apptSvc    = inject(AppointmentService);
   private readonly serviceSvc = inject(ServiceApiService);
@@ -146,30 +350,40 @@ export class DashboardComponent implements OnInit {
 
   readonly statCards = computed<StatCard[]>(() => [
     {
-      label: 'RDV aujourd\'hui',
-      value: this.todayAppointments().length,
-      icon:  'event',
-      color: '#1e7e34',
+      label:    'RDV aujourd\'hui',
+      value:    this.todayAppointments().length,
+      icon:     'event',
+      colorVar: '#E8600A',
+      bgVar:    '#FEF0E7',
+      route:    '/appointments',
     },
     {
-      label: 'Total clients',
-      value: this.totalCusts(),
-      icon:  'people',
-      color: '#1976d2',
+      label:    'Total clients',
+      value:    this.totalCusts(),
+      icon:     'people',
+      colorVar: '#1565C0',
+      bgVar:    '#E3F2FD',
+      route:    '/customers',
     },
     {
-      label: 'Services actifs',
-      value: this.totalSvcs(),
-      icon:  'content_cut',
-      color: '#f57c00',
+      label:    'Services actifs',
+      value:    this.totalSvcs(),
+      icon:     'content_cut',
+      colorVar: '#1E8A3E',
+      bgVar:    '#E8F5E9',
+      route:    '/services',
     },
     {
-      label: 'RDV ce mois',
-      value: this.monthCount(),
-      icon:  'calendar_month',
-      color: '#7b1fa2',
+      label:    'RDV ce mois',
+      value:    this.monthCount(),
+      icon:     'calendar_month',
+      colorVar: '#C8952A',
+      bgVar:    '#FDF6E7',
+      route:    '/appointments',
     },
   ]);
+
+  navigate(route: string) { this.router.navigate([route]); }
 
   private monthCount() {
     const now = this.today;

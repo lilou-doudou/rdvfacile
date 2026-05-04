@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 260" fill="none">
+  <!-- Oreille gauche -->
+  <ellipse cx="82" cy="105" rx="38" ry="44" fill="white" opacity="0.12"/>
+
+  <!-- Corps principal -->
+  <ellipse cx="168" cy="138" rx="82" ry="62" fill="white" opacity="0.13"/>
+
+  <!-- Tête -->
+  <ellipse cx="95" cy="98" rx="48" ry="42" fill="white" opacity="0.14"/>
+
+  <!-- Trompe -->
+  <path d="M60 128 Q44 155 50 183 Q56 200 72 196 Q86 192 84 175"
+        stroke="white" stroke-width="18" stroke-linecap="round" fill="none" opacity="0.13"/>
+
+  <!-- Défense -->
+  <path d="M68 122 Q46 130 40 148"
+        stroke="white" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.22"/>
+
+  <!-- Pattes avant -->
+  <rect x="105" y="182" width="24" height="44" rx="10" fill="white" opacity="0.12"/>
+  <rect x="136" y="182" width="24" height="44" rx="10" fill="white" opacity="0.12"/>
+
+  <!-- Pattes arrière -->
+  <rect x="176" y="182" width="24" height="44" rx="10" fill="white" opacity="0.11"/>
+  <rect x="207" y="182" width="24" height="44" rx="10" fill="white" opacity="0.11"/>
+
+  <!-- Queue -->
+  <path d="M244 120 Q264 108 260 138"
+        stroke="white" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.12"/>
+
+  <!-- Oeil -->
+  <circle cx="80" cy="88" r="6" fill="white" opacity="0.40"/>
+  <circle cx="80" cy="88" r="2.5" fill="white" opacity="0.70"/>
+
+  <!-- Défense bout arrondi -->
+  <circle cx="40" cy="149" r="4" fill="white" opacity="0.20"/>
+</svg>

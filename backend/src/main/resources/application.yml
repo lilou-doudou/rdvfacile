@@ -1,8 +1,11 @@
 spring:
   main:
     lazy-initialization: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/rdvfacile_bd}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/rdvfacile_bd}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
@@ -17,6 +20,17 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 server:
   port: ${PORT:8080}
@@ -34,23 +48,11 @@ management:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:rdvfacile-super-secret-key-minimum-256-bits-long-for-hs256-algorithm}
+    secret: ${JWT_SECRET}
     expiration-ms: 86400000  # 24h
   frontend-url: ${FRONTEND_URL:http://localhost:4200}
 
-spring:
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    test-connection: false
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID:}
@@ -61,3 +63,4 @@ logging:
   level:
     com.rdvfacile: DEBUG
     org.springframework.security: INFO
+    org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer: ERROR
