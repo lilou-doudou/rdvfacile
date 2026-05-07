@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -14,6 +14,26 @@ import { CustomerService } from '../../core/services/customer.service';
 import { Customer, CustomerPayload } from '../../core/models/customer.model';
 
 @Component({
+  selector: 'app-confirm-delete-customer-dialog',
+  standalone: true,
+  imports: [MatDialogModule, MatButtonModule],
+  template: `
+    <h2 mat-dialog-title>Supprimer le client</h2>
+    <mat-dialog-content>
+      <p>Êtes-vous sûr de vouloir supprimer <strong>{{ data.name }}</strong> ?</p>
+      <p style="color:#666;font-size:.85rem;margin-top:4px">Cette action est irréversible.</p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button [mat-dialog-close]="false">Annuler</button>
+      <button mat-raised-button color="warn" [mat-dialog-close]="true">Supprimer</button>
+    </mat-dialog-actions>
+  `,
+})
+export class ConfirmDeleteCustomerDialogComponent {
+  readonly data = inject<{ name: string }>(MAT_DIALOG_DATA);
+}
+
+@Component({
   selector: 'app-customers',
   standalone: true,
   imports: [
@@ -21,6 +41,7 @@ import { Customer, CustomerPayload } from '../../core/models/customer.model';
     MatTableModule, MatSortModule, MatButtonModule, MatIconModule, MatDialogModule,
     MatFormFieldModule, MatInputModule, MatSnackBarModule,
     MatProgressSpinnerModule, MatCardModule,
+    ConfirmDeleteCustomerDialogComponent,
   ],
   template: `
     <div class="customers-page">
@@ -63,6 +84,9 @@ import { Customer, CustomerPayload } from '../../core/models/customer.model';
               <td mat-cell *matCellDef="let c">
                 <button mat-icon-button (click)="openDialog(c)" title="Modifier">
                   <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button class="action-btn warn" (click)="confirmDelete(c)" title="Supprimer">
+                  <mat-icon>delete</mat-icon>
                 </button>
               </td>
             </ng-container>
@@ -153,6 +177,8 @@ import { Customer, CustomerPayload } from '../../core/models/customer.model';
     .dialog-form { display: flex; flex-direction: column; gap: 12px; min-width: 320px; padding-top: 8px; }
     .empty-table { text-align: center; color: #9E9E9E; padding: 32px; font-size: .9rem; }
     mat-spinner { display: inline-block; }
+    .action-btn.warn { color: #d32f2f; }
+    .action-btn.warn:hover { background: rgba(211,47,47,.08); }
   `],
 })
 export class CustomersComponent implements OnInit {
@@ -225,6 +251,29 @@ export class CustomersComponent implements OnInit {
       error: (err) => {
         this.snack.open(err.error?.message ?? 'Erreur', 'Fermer', { duration: 4000 });
         this.saving.set(false);
+      },
+    });
+  }
+
+  confirmDelete(customer: Customer) {
+    const ref = this.dialog.open(ConfirmDeleteCustomerDialogComponent, {
+      data: { name: customer.fullName },
+      width: '360px',
+    });
+    ref.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) this.doDelete(customer.id);
+    });
+  }
+
+  doDelete(id: string) {
+    this.cust.delete(id).subscribe({
+      next: () => {
+        this.customers.update(list => list.filter(c => c.id !== id));
+        this.filtered.update(list => list.filter(c => c.id !== id));
+        this.snack.open('Client supprimé', '', { duration: 3000 });
+      },
+      error: (err) => {
+        this.snack.open(err.error?.message ?? 'Erreur lors de la suppression', 'Fermer', { duration: 4000 });
       },
     });
   }
