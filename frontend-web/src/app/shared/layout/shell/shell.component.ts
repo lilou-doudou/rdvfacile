@@ -187,7 +187,7 @@ interface NavItem { label: string; icon: string; route: string; }
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: rgba(255,255,255,.3);
+      color: rgba(255,255,255,.55);
       padding: 0 20px;
       margin: 0 0 8px;
     }
@@ -197,14 +197,14 @@ interface NavItem { label: string; icon: string; route: string; }
     .nav-item {
       border-radius: 10px !important;
       margin-bottom: 2px !important;
-      color: rgba(255,255,255,.65) !important;
+      color: rgba(255,255,255,.88) !important;
       height: 46px !important;
       transition: background 0.15s, color 0.15s !important;
     }
 
     .nav-item:hover {
-      background: rgba(255,255,255,.07) !important;
-      color: rgba(255,255,255,.95) !important;
+      background: rgba(255,255,255,.12) !important;
+      color: white !important;
     }
 
     .nav-item.active-link {
@@ -214,8 +214,8 @@ interface NavItem { label: string; icon: string; route: string; }
       .nav-icon { color: #E8600A !important; }
     }
 
-    .nav-icon { color: inherit; }
-    .nav-label-text { font-size: .9rem; font-weight: 500; }
+    .nav-icon { color: inherit; opacity: 0.9; }
+    .nav-label-text { font-size: .9rem; font-weight: 600; }
 
     /* ── Sidebar footer ── */
     .sidenav-footer {
