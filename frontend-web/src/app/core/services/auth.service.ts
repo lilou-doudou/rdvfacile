@@ -45,6 +45,25 @@ export class AuthService {
     return this.http.post<void>(`${environment.apiUrl}/auth/resend-verification`, null, { params: { email } });
   }
 
+  getProfile() {
+    return this.http.get<{ fullName: string; email: string; businessName: string; businessPhone: string; businessAddress: string }>(`${environment.apiUrl}/users/profile`);
+  }
+
+  updateProfile(payload: { fullName: string; businessName: string; businessPhone: string; businessAddress?: string }) {
+    return this.http.put<void>(`${environment.apiUrl}/users/profile`, payload).pipe(
+      tap(() => {
+        const current = this._user();
+        if (current) {
+          this.persist({ ...current, fullName: payload.fullName, businessName: payload.businessName });
+        }
+      })
+    );
+  }
+
+  changePassword(payload: { currentPassword: string; newPassword: string }) {
+    return this.http.put<void>(`${environment.apiUrl}/users/password`, payload);
+  }
+
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);

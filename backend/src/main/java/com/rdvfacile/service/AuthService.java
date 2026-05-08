@@ -24,6 +24,9 @@ import com.rdvfacile.dto.auth.ForgotPasswordRequest;
 import com.rdvfacile.dto.auth.LoginRequest;
 import com.rdvfacile.dto.auth.RegisterRequest;
 import com.rdvfacile.dto.auth.ResetPasswordRequest;
+import com.rdvfacile.dto.user.PasswordChangeRequest;
+import com.rdvfacile.dto.user.ProfileResponse;
+import com.rdvfacile.dto.user.ProfileUpdateRequest;
 import com.rdvfacile.exception.BusinessException;
 import com.rdvfacile.model.Business;
 import com.rdvfacile.model.User;
@@ -192,5 +195,41 @@ public class AuthService {
             userRepository.save(user);
             sendVerificationEmail(user.getEmail(), user.getFullName(), token);
         });
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileResponse getProfile(User user) {
+        return new ProfileResponse(
+                user.getFullName(),
+                user.getEmail(),
+                user.getBusiness().getName(),
+                user.getBusiness().getPhone(),
+                user.getBusiness().getAddress()
+        );
+    }
+
+    @Transactional
+    public void updateProfile(User user, ProfileUpdateRequest request) {
+        user.setFullName(request.getFullName());
+        userRepository.save(user);
+
+        Business business = user.getBusiness();
+        business.setName(request.getBusinessName());
+        if (!business.getPhone().equals(request.getBusinessPhone())
+                && businessRepository.existsByPhone(request.getBusinessPhone())) {
+            throw new BusinessException("Ce numéro de téléphone est déjà utilisé par un autre commerce");
+        }
+        business.setPhone(request.getBusinessPhone());
+        business.setAddress(request.getBusinessAddress());
+        businessRepository.save(business);
+    }
+
+    @Transactional
+    public void changePassword(User user, PasswordChangeRequest request) {
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BusinessException("Mot de passe actuel incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

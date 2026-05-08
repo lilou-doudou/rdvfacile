@@ -392,5 +392,6 @@ export class ShellComponent {
     { label: 'Rendez-vous',     icon: 'calendar_month',   route: '/appointments' },
     { label: 'Services',        icon: 'content_cut',      route: '/services'     },
     { label: 'Clients',         icon: 'people',           route: '/customers'    },
+    { label: 'Mon profil',      icon: 'manage_accounts',  route: '/profile'      },
   ];
 }
