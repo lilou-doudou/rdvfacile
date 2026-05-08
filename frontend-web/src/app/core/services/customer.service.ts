@@ -19,4 +19,8 @@ export class CustomerService {
   update(id: string, payload: CustomerPayload) {
     return this.http.put<Customer>(`${this.base}/${id}`, payload);
   }
+
+  delete(id: string) {
+    return this.http.delete<void>(`${this.base}/${id}`);
+  }
 }
