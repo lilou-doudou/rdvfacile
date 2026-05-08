@@ -44,3 +44,4 @@ __pycache__/
 *.pyc
 nohup.out
 *.log
+backend/src/main/resources/application-dev.yml
